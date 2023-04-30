@@ -1,0 +1,157 @@
+/*********************************************************/
+/*********************************************************/
+Initial Conditions: 
+1. Robot’s Position is Σ01
+2. Q01 = FALSE, Q02α = FALSE, Q02β = FALSE, Q03 = FALSE
+3. Counter_1 = 0, Counter_2 = 0, Counter_3 = 0
+
+/*********************************************************/
+/*********************************************************/
+/* START OF PROCESS */
+
+Point-to-Point Σ01 -> Σ02
+Variable_1 = I02 //Read The Sensor on I02 and store it's value
+Q03 = TRUE, Q01 = TRUE  //Open gripper & stack piston
+
+if (I01 is TRUE) then
+	/*The Stack gave the first item*/
+		Q01 = FALSE //Close stack piston
+		Line Σ02 -> Σ03
+		Q03 = FALSE //Close gripper
+		Line Σ03 -> Σ02
+		Line Σ02 -> Σ04
+		Q03 = TRUE //Open gripper
+		Line Σ04 -> Σ02
+end_if
+
+/* Τhe Robot’s Position is Σ02*/
+do
+	Line Σ02 -> Σ03
+	Q03 = FALSE //Close gripper
+	Line Σ03 -> Σ02
+	if (Variable_1 is TRUE) then
+		/*The Item is a Metallic Item*/
+		Point-to-Point Σ02 -> Σ05
+		Line Σ05 -> Σ06a
+		Variable_3 = I03 //Read The Sensor on I03 and store it's value
+		Line Σ06a -> Σ05
+		if (Variable_3 is TRUE) then
+			call PLACE_METAL_CHARGED
+		else
+			Line Σ05 -> Σ06β
+			Variable_3 = I03
+			Line Σ06β -> Σ05
+			if (Variable_3 is TRUE) then
+				call PLACE_METAL_CHARGED
+			else
+				call PLACE_METAL_NOT_CHARGED
+			end if
+		end if
+	else
+		Point-to-Point Σ02 -> Σ01
+		call PLACE_PLASTIC
+	end_if
+
+	Variable_1 = I02 //Read The Sensor on I02 and store it's value
+	Q03 = TRUE, Q01 = TRUE //Open gripper & stack piston
+	Q01 = FALSE //Close stack piston
+while (I01 is TRUE) //If the Optic Sensor Sees abject Repeat the do-while statement
+
+/* EMPTY STACK */
+Q03 = FALSE //Close gripper
+Point-to-Point Σ02 -> Σ01
+/* END OF PROCESS */
+/*********************************************************/
+/*********************************************************/
+
+/*FUNCTION PLACE_METAL_CHARGED*/
+PLACE_METAL_CHARGED
+	Point-to-Point Σ05 - > Σ07
+	Line Σ07 -> Σ08β
+	Q02β = TRUE
+	Q02β = FALSE
+	Line Σ08β -> Σ07
+	Point-to-Point Σ07 - > Σ13
+	if counter_M1 == 0
+		Line Σ13 -> Σ14α
+		Q03 = TRUE
+		Line Σ14α -> Σ13
+		Q03 = FALSE
+		Point-to-Point Σ13 - > Σ02
+		counter_M1 +=1
+	elseif counter_M1 == 1
+		Line Σ13 -> Σ14b
+		Q03 = TRUE
+		Line Σ14β -> Σ13
+		Q03 = FALSE
+		Point-to-Point Σ13 - > Σ02
+		counter_M1 +=1
+	else
+		Line Σ13 - > Σ04
+		Q03 = TRUE
+		Q03 = FALSE
+		Line Σ04 -> Σ02
+	end if
+end_function
+
+/*FUNCTION PLACE_METAL_NOT_CHARGED*/
+PLACE_METAL_NOT_CHARGED
+	Point-to-Point Σ05 - > Σ07
+	Line Σ07 -> Σ08β
+	Q02β = TRUE
+	Q02β = FALSE
+	Line Σ08β -> Σ07
+	Point-to-Point Σ07 - > Σ11
+	if counter_M2 == 0
+		Line Σ11 -> Σ12α
+		Q03 = TRUE
+		Line Σ12α -> Σ11
+		Q03 = FALSE
+		Point-to-Point Σ11 - > Σ02
+		counter_M2 +=1
+	elseif counter_M2 == 1
+		Line Σ11 -> Σ12b
+		Q03 = TRUE
+		Line Σ12β -> Σ11
+		Q03 = FALSE
+		Point-to-Point Σ11 - > Σ02
+		counter_M2 +=1
+	else
+		Line Σ11 - > Σ04
+		Q03 = TRUE
+		Q03 = FALSE
+		Line Σ04 -> Σ02
+	end if
+end_function
+
+/*FUNCTION PLACE_PLASTIC*/
+PLACE_PLASTIC
+	Point-to-Point Σ01 - > Σ07
+	Line Σ07 -> Σ08α
+	Q02α = TRUE
+	Q02α = FALSE
+	Line Σ08α -> Σ07
+	Point-to-Point Σ07 - > Σ09
+	if counter_M3 == 0
+		Line Σ09 -> Σ10α
+		Q03 = TRUE
+		Line Σ10α -> Σ09
+		Q03 = FALSE
+		Point-to-Point Σ09 - > Σ02
+		counter_M3 +=1
+	elseif counter_M3 == 1
+		Line Σ09 -> Σ10β
+		Q03 = TRUE
+		Line Σ10β -> Σ09
+		Q03 = FALSE
+		Point-to-Point Σ09 - > Σ02
+		counter_M3 +=1
+	else
+		Line Σ09 - > Σ04
+		Q03 = TRUE
+		Q03 = FALSE
+		Line Σ04 -> Σ02
+	end if
+end_function
+/*********************************************************/
+/*********************************************************/
