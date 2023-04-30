@@ -1,10 +1,5 @@
 %% Robotics Lab course
 % Lab 2 - Pendubot Control
-% Team 4
-%       Name: Eirini-Maria Georganta, A.M.: 02121201
-%       Name: Georgios Kassavetakis,  A.M.: 02121203
-%       Name: Georgios Krommydas,     A.M.: 02121208
-%       Name: Frantzieska Michail,    A.M.: 02121216
 
 clear;
 clc;
