@@ -1,0 +1,121 @@
+/*********************************************************/
+Initial Conditions: 
+1. Robot’s Position is Σ01
+2. Q01 = FALSE, Q02α = FALSE, Q02β = FALSE, Q03 = FALSE
+3. Counter_1 = 0, Counter_2 = 0, Counter_3 = 0
+/*********************************************************/
+
+/* START OF PROCESS */
+
+Move Point-to-Point Σ02
+Variable_1 = I02 //Read The Sensor on I02 and store it's value
+Open_Gripper()
+Stack_Piston_Actuation(3sec)//Make TRUE for 3 Seconds and then FALSE
+
+if (I01 is TRUE) then
+	/*The Stack gave the first item*/
+	Variable_2 = I02 //Read The Sensor on I02 and store it's value
+	Move Line Σ03
+	Close_Gripper()
+	Move Line Σ02
+	Move Line Σ04
+	Open_Gripper()
+	Move Line Σ02
+	Stack_Piston_Actuation(3sec)//Make TRUE for 3 Seconds and then FALSE
+end_if
+
+/* Τhe Robot’s Position is Σ02*/
+do
+	Move Line Σ03
+	Close_Gripper()
+	Move Line Σ02
+	if (Variable_1 is TRUE) then
+		/*The Item is a Metallic Item*/
+		m_item = 0
+		Move Point-to-Point Σ05
+		for i in {α,β} do
+			Move Line Σ06[i]
+			Variable_3 = I03 //Read The Sensor on I03 and store it's value
+			Move Line Σ05
+			if (Variable_3 is TRUE) then
+				m_item = 1
+				Label(Variable_1)
+				place_object('Metal_Charged',Counter_1)
+				break // The process goes out of the for loop
+			end_if
+		end_for
+		if (m_item is 0) then
+			Label(Variable_1)
+			place_object('Metal_Not__Charged',Counter_2)
+		end_if
+		
+	else
+		Label(Variable_1)
+		place_object('Plastic',Counter_3)
+	end_if
+	
+	Move Point-to-Point Σ02
+	Variable_1 = Variable_2 // Load on Variable_1 the past measurement of I02
+	Variable_2 = I02 //Read The Sensor on I02 and store it's value
+	Open_Gripper()
+	Stack_Piston_Actuation(3sec)//Make TRUE for 3 Seconds and then FALSE
+while (I01 is TRUE) //If the Optic Sensor Sees object Repeat the do-while statement
+
+/* EMPTY STACK */
+Close_Gripper()
+Move Point-to-Point Σ01
+
+/* END OF PROCESS */
+/*********************************************************/
+
+function Label(item_type)
+	Move Point-to-Point Σ01
+	if (item_type is FALSE) then //Plastic Item
+		index = α
+	elseif (item_type is TRUE) ) then //Metal Item
+		index = β 
+	end_if
+	Move Point-to-Point Σ07
+	Move Line Σ08[index]
+	if (item_type is FALSE) then //Plastic Item
+		Plastic_Piston_Actuation(1sec)//Make TRUE for 1 Seconds and then FALSE
+	elseif (item_type is TRUE) ) then //Metal Item
+		Metal_Piston_Actuation(1sec)//Make TRUE for 1 Seconds and then FALSE
+	end_if
+	Move Line Σ07
+end_function
+
+function place_object(item,counter)
+	if (counter is 0) then //Plastic Item
+		index = α
+	elseif (counter is 1) ) then //Metal Item
+		index = β
+	else
+		Move Point-to-Point Σ02
+		Move Line Σ04
+		Open_Gripper()
+		Close__Gripper()
+		Move Line Σ02
+		return //Ends the function
+	end_if
+	if (item is 'Metal_Charged') then
+		Move Point-to-Point Σ13
+		Move Line Σ14[index]
+		Open_Gripper()
+		Move Line Σ13
+	elseif (item is 'Metal_Not__Charged') then
+		Move Point-to-Point Σ11
+		Move Line Σ12[index]
+		Open_Gripper()
+		Move Line Σ11
+	elseif (item is 'Plastic') then
+		Move Point-to-Point Σ09
+		Move Line Σ10[index]
+		Open_Gripper()
+		Move Line Σ09
+	end_if
+	Close__Gripper()
+	Move Point-to-Point Σ02
+	counter = counter + 1
+end_function
+/*********************************************************/

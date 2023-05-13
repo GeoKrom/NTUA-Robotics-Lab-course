@@ -1,0 +1,60 @@
+PLACE_METAL_1 - > 1st WAY
+
+Point-to-Point Σ05 - > Σ07
+Line Σ07 -> Σ08β
+Q02β = TRUE
+Q02β = FALSE
+Line Σ08β -> Σ07
+Point-to-Point Σ07 - > Σ13
+if counter_M1 == 0
+	Line Σ13 -> Σ14α
+	Q03 = TRUE
+	Line Σ14α -> Σ13
+	Q03 = FALSE
+	Point-to-Point Σ13 - > Σ02
+	counter_M1 +=1;
+elseif counter_M1 == 1
+	Line Σ13 -> Σ14b
+	Q03 = TRUE
+	Line Σ14β -> Σ13
+	Q03 = FALSE
+	Point-to-Point Σ13 - > Σ02
+	counter_M1 +=1;
+else
+	Line Σ13 - > Σ04
+	Q03 = TRUE
+	Q03 = FALSE
+	Line Σ04 -> Σ02
+end if
+
+
+
+
+
+PLACE_METAL_1 - > 2nd WAY
+
+Point-to-Point Σ05 - > Σ07
+Line Σ07 -> Σ08β
+Q02β = TRUE
+Q02β = FALSE
+Line Σ08β -> Σ07
+Point-to-Point Σ07 - > Σ13
+
+if counter_M1 < 2
+	if counter_M1 is 0
+		Line Σ13 -> Σ14α
+		Q03 = TRUE
+		Line Σ14α -> Σ13
+	else
+ 		Line Σ13 -> Σ14β
+		Q03 = TRUE
+		Line Σ14β -> Σ13
+	end if
+	Point-to-Point Σ13 - > Σ02
+	counter_M1 +=1;
+else
+	Line Σ13 - > Σ04
+	Q03 = TRUE
+	Q03 = FALSE
+	Line Σ04 -> Σ02
+end if
