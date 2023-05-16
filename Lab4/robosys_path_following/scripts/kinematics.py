@@ -6,6 +6,7 @@ Compute state space kinematic matrices for xArm7 robot arm (5 links, 7 joints)
 
 import numpy as np
 import math
+from math import cos, sin
 
 # Checks if a matrix is a valid rotation matrix.
 def isRotationMatrix(R) :
@@ -45,53 +46,218 @@ class xArm7_kinematics():
 
     def compute_jacobian(self, r_joints_array):
 
-        J_11 = 0
-        J_12 = 0
-        J_13 = 0
-        J_14 = 0
-        J_15 = 0
-        J_16 = 0
+        J_11 = - self.l3*(cos(r_joints_array[0])*sin(r_joints_array[2]) + cos(r_joints_array[1])*cos(r_joints_array[2])*sin(r_joints_array[0]))\
+               - self.l2*sin(r_joints_array[0])*sin(r_joints_array[1]) \
+               - self.l4*cos(self.theta1)*(sin(r_joints_array[3])*(cos(r_joints_array[0])*sin(r_joints_array[2]) + cos(r_joints_array[1])*cos(r_joints_array[2])*sin(r_joints_array[0])) - cos(r_joints_array[3])*sin(r_joints_array[0])*sin(r_joints_array[1]))\
+               - self.l4*sin(self.theta1)*(cos(r_joints_array[3])*(cos(r_joints_array[0])*sin(r_joints_array[2]) + cos(r_joints_array[1])*cos(r_joints_array[2])*sin(r_joints_array[0])) + sin(r_joints_array[0])*sin(r_joints_array[1])*sin(r_joints_array[3]))\
+               - self.l5*cos(self.theta2)*(cos(r_joints_array[5])*(sin(r_joints_array[3])*(cos(r_joints_array[0])*sin(r_joints_array[2]) + cos(r_joints_array[1])*cos(r_joints_array[2])*sin(r_joints_array[0])) - cos(r_joints_array[3])*sin(r_joints_array[0])*sin(r_joints_array[1])) - sin(r_joints_array[5])*(cos(r_joints_array[5])*(cos(r_joints_array[3])*(cos(r_joints_array[0])*sin(r_joints_array[2]) + cos(r_joints_array[1])*cos(r_joints_array[2])*sin(r_joints_array[0])) + sin(r_joints_array[0])*sin(r_joints_array[1])*sin(r_joints_array[3])) - sin(r_joints_array[4])*(cos(r_joints_array[0])*cos(r_joints_array[2]) - cos(r_joints_array[1])*sin(r_joints_array[0])*sin(r_joints_array[2]))))\
+               - self.l5*sin(self.theta2)*(sin(r_joints_array[5])*(sin(r_joints_array[3])*(cos(r_joints_array[0])*sin(r_joints_array[2]) + cos(r_joints_array[1])*cos(r_joints_array[2])*sin(r_joints_array[0])) - cos(r_joints_array[3])*sin(r_joints_array[0])*sin(r_joints_array[1])) + cos(r_joints_array[5])*(cos(r_joints_array[4])*(cos(r_joints_array[3])*(cos(r_joints_array[0])*sin(r_joints_array[2]) + cos(r_joints_array[1])*cos(r_joints_array[2])*sin(r_joints_array[0])) + sin(r_joints_array[0])*sin(r_joints_array[1])*sin(r_joints_array[3])) - sin(r_joints_array[4])*(cos(r_joints_array[0])*cos(r_joints_array[2]) - cos(r_joints_array[1])*sin(r_joints_array[0])*sin(r_joints_array[2]))))
+        
+        J_12 = self.l2*cos(r_joints_array[0])*cos(r_joints_array[1])\
+             - self.l5*sin(self.theta2)*(sin(r_joints_array[5])*(cos(r_joints_array[0])*cos(r_joints_array[1])*cos(r_joints_array[3]) + cos(r_joints_array[0])*cos(r_joints_array[2])*sin(r_joints_array[1])*sin(r_joints_array[3])) - cos(r_joints_array[5])*(cos(r_joints_array[4])*(cos(r_joints_array[0])*cos(r_joints_array[1])*sin(r_joints_array[3]) - cos(r_joints_array[0])*cos(r_joints_array[2])*cos(r_joints_array[3])*sin(r_joints_array[1])) - cos(r_joints_array[0])*sin(r_joints_array[1])*sin(r_joints_array[2])*sin(r_joints_array[4])))\
+             - self.l5*cos(self.theta2)*(cos(r_joints_array[5])*(cos(r_joints_array[0])*cos(r_joints_array[1])*cos(r_joints_array[3]) + cos(r_joints_array[0])*cos(r_joints_array[2])*sin(r_joints_array[1])*sin(r_joints_array[3])) + sin(r_joints_array[5])*(cos(r_joints_array[4])*(cos(r_joints_array[0])*cos(r_joints_array[1])*sin(r_joints_array[3]) - cos(r_joints_array[0])*cos(r_joints_array[2])*cos(r_joints_array[3])*sin(r_joints_array[1])) - cos(r_joints_array[0])*sin(r_joints_array[1])*sin(r_joints_array[2])*sin(r_joints_array[4])))\
+             - self.l4*cos(self.theta1)*(cos(r_joints_array[0])*cos(r_joints_array[1])*cos(r_joints_array[3]) + cos(r_joints_array[0])*cos(r_joints_array[2])*sin(r_joints_array[1])*sin(r_joints_array[3]))\
+             + self.l4*sin(self.theta1)*(cos(r_joints_array[0])*cos(r_joints_array[1])*sin(r_joints_array[3]) - cos(r_joints_array[0])*cos(r_joints_array[3])*cos(r_joints_array[3])*sin(r_joints_array[1])) - self.l3*cos(r_joints_array[0])*cos(r_joints_array[2])*sin(r_joints_array[1])
+        
+        J_13 = self.l5*cos(self.theta2)*(sin(r_joints_array[5])*(sin(r_joints_array[4])*(sin(r_joints_array[0])*sin(r_joints_array[2]) - cos(r_joints_array[0])*cos(r_joints_array[1])*cos(r_joints_array[2])) + cos(r_joints_array[3])*cos(r_joints_array[4])*(cos(r_joints_array[2])*sin(r_joints_array[0]) + cos(r_joints_array[0])*cos(r_joints_array[1])*sin(r_joints_array[2]))) - cos(r_joints_array[5])*sin(r_joints_array[3])*(cos(r_joints_array[2])*sin(r_joints_array[0]) + cos(r_joints_array[0])*cos(r_joints_array[1])*sin(r_joints_array[2])))\
+             - self.l3*(cos(r_joints_array[2])*sin(r_joints_array[0]) + cos(r_joints_array[0])*cos(r_joints_array[1])*sin(r_joints_array[2]))\
+             - self.l5*sin(self.theta2)*(cos(r_joints_array[5])*(sin(r_joints_array[4])*(sin(r_joints_array[0])*sin(r_joints_array[2]) - cos(r_joints_array[0])*cos(r_joints_array[1])*cos(r_joints_array[2])) + cos(r_joints_array[3])*cos(r_joints_array[4])*(cos(r_joints_array[2])*sin(r_joints_array[0]) + cos(r_joints_array[0])*cos(r_joints_array[1])*sin(r_joints_array[2]))) + sin(r_joints_array[3])*sin(r_joints_array[5])*(cos(r_joints_array[2])*sin(r_joints_array[0]) + cos(r_joints_array[0])*cos(r_joints_array[1])*sin(r_joints_array[2])))\
+             - self.l4*cos(r_joints_array[3])*sin(self.theta1)*(cos(r_joints_array[2])*sin(r_joints_array[0]) + cos(r_joints_array[0])*cos(r_joints_array[1])*sin(r_joints_array[2]))\
+             - self.l4*cos(self.theta1)*sin(r_joints_array[3])*(cos(r_joints_array[2])*sin(r_joints_array[0]) + cos(r_joints_array[0])*cos(r_joints_array[1])*sin(r_joints_array[2]))
+        
+        J_14 = self.l4*sin(self.theta1)*(sin(r_joints_array[3])*(sin(r_joints_array[0])*sin(r_joints_array[2]) - cos(r_joints_array[0])*cos(r_joints_array[1])*cos(r_joints_array[2])) + cos(r_joints_array[0])*cos(r_joints_array[3])*sin(r_joints_array[1]))\
+             - self.l5*sin(self.theta2)*(sin(r_joints_array[5])*(cos(r_joints_array[3])*(sin(r_joints_array[0])*sin(r_joints_array[2]) - cos(r_joints_array[0])*cos(r_joints_array[1])*cos(r_joints_array[2])) - cos(r_joints_array[0])*sin(r_joints_array[1])*sin(r_joints_array[3])) - cos(r_joints_array[4])*cos(r_joints_array[5])*(sin(r_joints_array[3])*(sin(r_joints_array[0])*sin(r_joints_array[2]) - cos(r_joints_array[0])*cos(r_joints_array[1])*cos(r_joints_array[2])) + cos(r_joints_array[0])*cos(r_joints_array[3])*sin(r_joints_array[1])))\
+             - self.l4*cos(self.theta1)*(cos(r_joints_array[3])*(sin(r_joints_array[0])*sin(r_joints_array[2]) - cos(r_joints_array[0])*cos(r_joints_array[1])*cos(r_joints_array[2])) - cos(r_joints_array[0])*sin(r_joints_array[1])*sin(r_joints_array[3]))\
+             - self.l5*cos(self.theta2)*(cos(r_joints_array[5])*(cos(r_joints_array[3])*(sin(r_joints_array[0])*sin(r_joints_array[2]) - cos(r_joints_array[0])*cos(r_joints_array[1])*cos(r_joints_array[2])) - cos(r_joints_array[0])*sin(r_joints_array[1])*sin(r_joints_array[3])) + cos(r_joints_array[4])*sin(r_joints_array[5])*(sin(r_joints_array[3])*(sin(r_joints_array[0])*sin(r_joints_array[2]) - cos(r_joints_array[0])*cos(r_joints_array[1])*cos(r_joints_array[2])) + cos(r_joints_array[0])*cos(r_joints_array[3])*sin(r_joints_array[1])))
+        
+        J_15 = -self.l5*sin(r_joints_array[5] - self.theta2)*(cos(r_joints_array[2])*cos(r_joints_array[4])*sin(r_joints_array[0]) + cos(r_joints_array[0])*cos(r_joints_array[1])*cos(r_joints_array[4])*sin(r_joints_array[2]) - cos(r_joints_array[0])*sin(r_joints_array[1])*sin(r_joints_array[3])*sin(r_joints_array[4]) + cos(r_joints_array[3])*sin(r_joints_array[0])*sin(r_joints_array[2])*sin(r_joints_array[4]) - cos(r_joints_array[0])*cos(r_joints_array[1])*cos(r_joints_array[2])*cos(r_joints_array[3])*sin(r_joints_array[4]))
+        
+        J_16 = self.l5*cos(self.theta2)*(sin(r_joints_array[5])*(sin(r_joints_array[3])*(sin(r_joints_array[0])*sin(r_joints_array[2]) - cos(r_joints_array[0])*cos(r_joints_array[1])*cos(r_joints_array[2])) + cos(r_joints_array[0])*cos(r_joints_array[3])*sin(r_joints_array[1])) + cos(r_joints_array[5])*(cos(r_joints_array[5])*(cos(r_joints_array[3])*(sin(r_joints_array[0])*sin(r_joints_array[2]) - cos(r_joints_array[0])*cos(r_joints_array[1])*cos(r_joints_array[2])) - cos(r_joints_array[0])*sin(r_joints_array[1])*sin(r_joints_array[3])) - sin(r_joints_array[4])*(cos(r_joints_array[2])*sin(r_joints_array[0]) + cos(r_joints_array[0])*cos(r_joints_array[1])*sin(r_joints_array[2]))))\
+             - self.l5*sin(self.theta2)*(cos(r_joints_array[5])*(sin(r_joints_array[3])*(sin(r_joints_array[0])*sin(r_joints_array[2]) - cos(r_joints_array[0])*cos(r_joints_array[1])*cos(r_joints_array[2])) + cos(r_joints_array[0])*cos(r_joints_array[3])*sin(r_joints_array[1])) - sin(r_joints_array[5])*(cos(r_joints_array[4])*(cos(r_joints_array[3])*(sin(r_joints_array[0])*sin(r_joints_array[2]) - cos(r_joints_array[0])*cos(r_joints_array[1])*cos(r_joints_array[2])) - cos(r_joints_array[0])*sin(r_joints_array[2])*sin(r_joints_array[3])) - sin(r_joints_array[4])*(cos(r_joints_array[2])*sin(r_joints_array[0]) + cos(r_joints_array[0])*cos(r_joints_array[1])*sin(r_joints_array[2]))))
+        
         J_17 = 0
 
-        J_21 = 0
-        J_22 = 0
-        J_23 = 0
-        J_24 = 0
-        J_25 = 0
-        J_26 = 0
+        J_21 = self.l2*cos(q1)*sin(q2) - self.l3*(sin(q1)*sin(q3) - cos(q1)*cos(q2)*cos(q3)) - self.l4*cos(self.theta1)*(sin(q4)*(sin(q1)*sin(q3) - cos(q1)*cos(q2)*cos(q3)) + cos(q1)*cos(q4)*sin(q2))\
+              - self.l5*cos(self.theta2)*(cos(q6)*(sin(q4)*(sin(q1)*sin(q3) - cos(q1)*cos(q2)*cos(q3)) + cos(q1)*cos(q4)*sin(q2)) - sin(q6)*(cos(q5)*(cos(q4)*(sin(q1)*sin(q3) - cos(q1)*cos(q2)*cos(q3)) - cos(q1)*sin(q2)*sin(q4)) - sin(q5)*(cos(q3)*sin(q1) + cos(q1)*cos(q2)*sin(q3))))\
+              - self.l4*sin(self.theta1)*(cos(q4)*(sin(q1)*sin(q3) - cos(q1)*cos(q2)*cos(q3)) - cos(q1)*sin(q2)*sin(q4))\
+              - self.l5*sin(self.theta2)*(sin(q6)*(sin(q4)*(sin(q1)*sin(q3) - cos(q1)*cos(q2)*cos(q3)) + cos(q1)*cos(q4)*sin(q2)) + cos(q6)*(cos(q5)*(cos(q4)*(sin(q1)*sin(q3) - cos(q1)*cos(q2)*cos(q3)) - cos(q1)*sin(q2)*sin(q4)) - sin(q5)*(cos(q3)*sin(q1) + cos(q1)*cos(q2)*sin(q3)))) 
+        
+        J_22 = self.l2*cos(q2)*sin(q1) - self.l5*sin(self.theta2)*(sin(q6)*(cos(q2)*cos(q4)*sin(q1) + cos(q3)*sin(q1)*sin(q2)*sin(q4)) - cos(q6)*(cos(q5)*(cos(q2)*sin(q1)*sin(q4) - cos(q3)*cos(q4)*sin(q1)*sin(q2)) - sin(q1)*sin(q2)*sin(q3)*sin(q5)))\
+             - self.l5*cos(self.theta2)*(cos(q6)*(cos(q2)*cos(q4)*sin(q1) + cos(q3)*sin(q1)*sin(q2)*sin(q4)) + sin(q6)*(cos(q5)*(cos(q2)*sin(q1)*sin(q4) - cos(q3)*cos(q4)*sin(q1)*sin(q2)) - sin(q1)*sin(q2)*sin(q3)*sin(q5)))\
+             - self.l4*cos(self.theta1)*(cos(q2)*cos(q4)*sin(q1) + cos(q3)*sin(q1)*sin(q2)*sin(q4))\
+             + self.l4*sin(self.theta1)*(cos(q2)*sin(q1)*sin(q4) - cos(q3)*cos(q4)*sin(q1)*sin(q2))\
+             - self.l3*cos(q3)*sin(q1)*sin(q2)
+        
+        J_23 = self.l3*(cos(q1)*cos(q3) - cos(q2)*sin(q1)*sin(q3)) - self.l5*cos(self.theta2)*(sin(q6)*(sin(q5)*(cos(q1)*sin(q3) + cos(q2)*cos(q3)*sin(q1)) + cos(q4)*cos(q5)*(cos(q1)*cos(q3) - cos(q2)*sin(q1)*sin(q3))) - cos(q6)*sin(q4)*(cos(q1)*cos(q3) - cos(q2)*sin(q1)*sin(q3)))\
+             + self.l5*sin(self.theta2)*(cos(q6)*(sin(q5)*(cos(q1)*sin(q3) + cos(q2)*cos(q3)*sin(q1)) + cos(q4)*cos(q5)*(cos(q1)*cos(q3) - cos(q2)*sin(q1)*sin(q3))) + sin(q4)*sin(q6)*(cos(q1)*cos(q3) - cos(q2)*sin(q1)*sin(q3)))\
+             + self.l4*cos(q4)*sin(self.theta1)*(cos(q1)*cos(q3) - cos(q2)*sin(q1)*sin(q3))\
+             + self.l4*cos(self.theta1)*sin(q4)*(cos(q1)*cos(q3) - cos(q2)*sin(q1)*sin(q3))
+
+        J_24 = self.l5*cos(self.theta2)*(cos(q6)*(cos(q4)*(cos(q1)*sin(q3) + cos(q2)*cos(q3)*sin(q1)) + sin(q1)*sin(q2)*sin(q4)) + cos(q5)*sin(q6)*(sin(q4)*(cos(q1)*sin(q3) + cos(q2)*cos(q3)*sin(q1)) - cos(q4)*sin(q1)*sin(q2)))\
+             + self.l5*sin(self.theta2)*(sin(q6)*(cos(q4)*(cos(q1)*sin(q3) + cos(q2)*cos(q3)*sin(q1)) + sin(q1)*sin(q2)*sin(q4)) - cos(q5)*cos(q6)*(sin(q4)*(cos(q1)*sin(q3) + cos(q2)*cos(q3)*sin(q1)) - cos(q4)*sin(q1)*sin(q2)))\
+             + self.l4*cos(self.theta1)*(cos(q4)*(cos(q1)*sin(q3) + cos(q2)*cos(q3)*sin(q1)) + sin(q1)*sin(q2)*sin(q4))\
+             - self.l4*sin(self.theta1)*(sin(q4)*(cos(q1)*sin(q3) + cos(q2)*cos(q3)*sin(q1)) - cos(q4)*sin(q1)*sin(q2))
+        
+        J_25 = self.l5*sin(q6 - self.theta2)*(cos(q1)*cos(q3)*cos(q5) - cos(q2)*cos(q5)*sin(q1)*sin(q3) + cos(q1)*cos(q4)*sin(q3)*sin(q5) + sin(q1)*sin(q2)*sin(q4)*sin(q5) + cos(q2)*cos(q3)*cos(q4)*sin(q1)*sin(q5))
+        
+        J_26 = self.l5*sin(self.theta2)*(cos(q6)*(sin(q4)*(cos(q1)*sin(q3) + cos(q2)*cos(q3)*sin(q1)) - cos(q4)*sin(q1)*sin(q2)) - sin(q6)*(cos(q5)*(cos(q4)*(cos(q1)*sin(q3) + cos(q2)*cos(q3)*sin(q1)) + sin(q1)*sin(q2)*sin(q4)) - sin(q5)*(cos(q1)*cos(q3) - cos(q2)*sin(q1)*sin(q3))))\
+             - self.l5*cos(self.theta2)*(sin(q6)*(sin(q4)*(cos(q1)*sin(q3) + cos(q2)*cos(q3)*sin(q1)) - cos(q4)*sin(q1)*sin(q2)) + cos(q6)*(cos(q5)*(cos(q4)*(cos(q1)*sin(q3) + cos(q2)*cos(q3)*sin(q1)) + sin(q1)*sin(q2)*sin(q4)) - sin(q5)*(cos(q1)*cos(q3) - cos(q2)*sin(q1)*sin(q3))))
+        
         J_27 = 0
 
         J_31 = 0
-        J_32 = 0
-        J_33 = 0
-        J_34 = 0
-        J_35 = 0
-        J_36 = 0
+
+        J_32 = self.l4*cos(self.theta1)*(cos(q4)*sin(q2) - cos(q2)*cos(q3)*sin(q4)) - self.l2*sin(q2)\
+             - self.l4*sin(self.theta1)*(sin(q2)*sin(q4) + cos(q2)*cos(q3)*cos(q4)) - self.l3*cos(q2)*cos(q3)\
+             + self.l5*cos(self.theta2)*(sin(q6)*(cos(q5)*(sin(q2)*sin(q4) + cos(q2)*cos(q3)*cos(q4)) + cos(q2)*sin(q3)*sin(q5)) + cos(q6)*(cos(q4)*sin(q2) - cos(q2)*cos(q3)*sin(q4)))\
+             - self.l5*sin(self.theta2)*(cos(q6)*(cos(q5)*(sin(q2)*sin(q4) + cos(q2)*cos(q3)*cos(q4)) + cos(q2)*sin(q3)*sin(q5)) - sin(q6)*(cos(q4)*sin(q2) - cos(q2)*cos(q3)*sin(q4)))
+        
+        J_33 = self.l4*cos(self.theta1)*(cos(q4)*sin(q2) - cos(q2)*cos(q3)*sin(q4)) - self.l2*sin(q2)\
+             - self.l4*sin(self.theta1)*(sin(q2)*sin(q4) + cos(q2)*cos(q3)*cos(q4)) - self.l3*cos(q2)*cos(q3)\
+             + self.l5*cos(self.theta2)*(sin(q6)*(cos(q5)*(sin(q2)*sin(q4) + cos(q2)*cos(q3)*cos(q4)) + cos(q2)*sin(q3)*sin(q5)) + cos(q6)*(cos(q4)*sin(q2) - cos(q2)*cos(q3)*sin(q4)))\
+             - self.l5*sin(self.theta2)*(cos(q6)*(cos(q5)*(sin(q2)*sin(q4) + cos(q2)*cos(q3)*cos(q4)) + cos(q2)*sin(q3)*sin(q5)) - sin(q6)*(cos(q4)*sin(q2) - cos(q2)*cos(q3)*sin(q4)))
+        
+        J_34 = self.l4*cos(self.theta1)*(cos(q2)*sin(q4) - cos(q3)*cos(q4)*sin(q2))\
+             + self.l4*sin(self.theta1)*(cos(q2)*cos(q4) + cos(q3)*sin(q2)*sin(q4))\
+             + self.l5*cos(self.theta2)*(cos(q6)*(cos(q2)*sin(q4) - cos(q3)*cos(q4)*sin(q2)) - cos(q5)*sin(q6)*(cos(q2)*cos(q4) + cos(q3)*sin(q2)*sin(q4)))\
+             + self.l5*sin(self.theta2)*(sin(q6)*(cos(q2)*sin(q4) - cos(q3)*cos(q4)*sin(q2)) + cos(q5)*cos(q6)*(cos(q2)*cos(q4) + cos(q3)*sin(q2)*sin(q4)))
+        
+        J_35 = self.l5*sin(q6 - self.theta2)*(cos(q5)*sin(q2)*sin(q3) + cos(q2)*sin(q4)*sin(q5) - cos(q3)*cos(q4)*sin(q2)*sin(q5))
+        
+        J_36 = - self.l5*cos(self.theta2)*(cos(q6)*(cos(q5)*(cos(q2)*sin(q4) - cos(q3)*cos(q4)*sin(q2)) - sin(q2)*sin(q3)*sin(q5)) - sin(q6)*(cos(q2)*cos(q4) + cos(q3)*sin(q2)*sin(q4)))\
+               - self.l5*sin(self.theta2)*(sin(q6)*(cos(q5)*(cos(q2)*sin(q4) - cos(q3)*cos(q4)*sin(q2)) - sin(q2)*sin(q3)*sin(q5)) + cos(q6)*(cos(q2)*cos(q4) + cos(q3)*sin(q2)*sin(q4)))
+        
         J_37 = 0
 
         J_41 = 0
-        J_42 = 0
-        J_43 = 0
-        J_44 = 0
-        J_45 = 0
-        J_46 = 0
-        J_47 = 0
+        
+        J_42 = (cos(q7)*(sin(q6)*(sin(q4)*(cos(q1)*sin(q3) + cos(q2)*cos(q3)*sin(q1)) - cos(q4)*sin(q1)*sin(q2)) + cos(q6)*(cos(q5)*(cos(q4)*(cos(q1)*sin(q3) + cos(q2)*cos(q3)*sin(q1)) + sin(q1)*sin(q2)*sin(q4)) - sin(q5)*(cos(q1)*cos(q3) - cos(q2)*sin(q1)*sin(q3)))) - sin(q7)*(sin(q5)*(cos(q4)*(cos(q1)*sin(q3) + cos(q2)*cos(q3)*sin(q1)) + sin(q1)*sin(q2)*sin(q4)) + cos(q5)*(cos(q1)*cos(q3) - cos(q2)*sin(q1)*sin(q3))))\
+              *(sin(q7)*(sin(q5)*(sin(q2)*sin(q4) + cos(q2)*cos(q3)*cos(q4)) - cos(q2)*cos(q5)*sin(q3)) - cos(q7)*(cos(q6)*(cos(q5)*(sin(q2)*sin(q4) + cos(q2)*cos(q3)*cos(q4)) + cos(q2)*sin(q3)*sin(q5)) - sin(q6)*(cos(q4)*sin(q2) - cos(q2)*cos(q3)*sin(q4))))\
+              -(sin(q7)*(sin(q6)*(sin(q4)*(cos(q1)*sin(q3) + cos(q2)*cos(q3)*sin(q1)) - cos(q4)*sin(q1)*sin(q2)) + cos(q6)*(cos(q5)*(cos(q4)*(cos(q1)*sin(q3) + cos(q2)*cos(q3)*sin(q1)) + sin(q1)*sin(q2)*sin(q4)) - sin(q5)*(cos(q1)*cos(q3) - cos(q2)*sin(q1)*sin(q3)))) + cos(q7)*(sin(q5)*(cos(q4)*(cos(q1)*sin(q3) + cos(q2)*cos(q3)*sin(q1)) + sin(q1)*sin(q2)*sin(q4)) + cos(q5)*(cos(q1)*cos(q3) - cos(q2)*sin(q1)*sin(q3))))\
+              *(cos(q7)*(sin(q5)*(sin(q2)*sin(q4) + cos(q2)*cos(q3)*cos(q4)) - cos(q2)*cos(q5)*sin(q3)) + sin(q7)*(cos(q6)*(cos(q5)*(sin(q2)*sin(q4) + cos(q2)*cos(q3)*cos(q4)) + cos(q2)*sin(q3)*sin(q5)) - sin(q6)*(cos(q4)*sin(q2) - cos(q2)*cos(q3)*sin(q4))))\
+              +(cos(q6)*(sin(q4)*(cos(q1)*sin(q3) + cos(q2)*cos(q3)*sin(q1)) - cos(q4)*sin(q1)*sin(q2)) - sin(q6)*(cos(q5)*(cos(q4)*(cos(q1)*sin(q3) + cos(q2)*cos(q3)*sin(q1)) + sin(q1)*sin(q2)*sin(q4)) - sin(q5)*(cos(q1)*cos(q3) - cos(q2)*sin(q1)*sin(q3))))\
+              *(sin(q6)*(cos(q5)*(sin(q2)*sin(q4) + cos(q2)*cos(q3)*cos(q4)) + cos(q2)*sin(q3)*sin(q5)) + cos(q6)*(cos(q4)*sin(q2) - cos(q2)*cos(q3)*sin(q4)))
+        
+        J_43 = (cos(q6)*(sin(q4)*(cos(q1)*sin(q3) + cos(q2)*cos(q3)*sin(q1)) - cos(q4)*sin(q1)*sin(q2)) - sin(q6)*(cos(q5)*(cos(q4)*(cos(q1)*sin(q3) + cos(q2)*cos(q3)*sin(q1)) + sin(q1)*sin(q2)*sin(q4)) - sin(q5)*(cos(q1)*cos(q3) - cos(q2)*sin(q1)*sin(q3))))\
+              *(sin(q6)*(cos(q3)*sin(q2)*sin(q5) - cos(q4)*cos(q5)*sin(q2)*sin(q3)) + cos(q6)*sin(q2)*sin(q3)*sin(q4))\
+              +(sin(q7)*(sin(q6)*(sin(q4)*(cos(q1)*sin(q3) + cos(q2)*cos(q3)*sin(q1)) - cos(q4)*sin(q1)*sin(q2)) + cos(q6)*(cos(q5)*(cos(q4)*(cos(q1)*sin(q3) + cos(q2)*cos(q3)*sin(q1)) + sin(q1)*sin(q2)*sin(q4)) - sin(q5)*(cos(q1)*cos(q3) - cos(q2)*sin(q1)*sin(q3)))) + cos(q7)*(sin(q5)*(cos(q4)*(cos(q1)*sin(q3) + cos(q2)*cos(q3)*sin(q1)) + sin(q1)*sin(q2)*sin(q4)) + cos(q5)*(cos(q1)*cos(q3) - cos(q2)*sin(q1)*sin(q3))))\
+              *(cos(q7)*(cos(q3)*cos(q5)*sin(q2) + cos(q4)*sin(q2)*sin(q3)*sin(q5)) - sin(q7)*(cos(q6)*(cos(q3)*sin(q2)*sin(q5) - cos(q4)*cos(q5)*sin(q2)*sin(q3)) - sin(q2)*sin(q3)*sin(q4)*sin(q6)))\
+              -(cos(q7)*(sin(q6)*(sin(q4)*(cos(q1)*sin(q3) + cos(q2)*cos(q3)*sin(q1)) - cos(q4)*sin(q1)*sin(q2)) + cos(q6)*(cos(q5)*(cos(q4)*(cos(q1)*sin(q3) + cos(q2)*cos(q3)*sin(q1)) + sin(q1)*sin(q2)*sin(q4)) - sin(q5)*(cos(q1)*cos(q3) - cos(q2)*sin(q1)*sin(q3)))) - sin(q7)*(sin(q5)*(cos(q4)*(cos(q1)*sin(q3) + cos(q2)*cos(q3)*sin(q1)) + sin(q1)*sin(q2)*sin(q4)) + cos(q5)*(cos(q1)*cos(q3) - cos(q2)*sin(q1)*sin(q3))))\
+              *(sin(q7)*(cos(q3)*cos(q5)*sin(q2) + cos(q4)*sin(q2)*sin(q3)*sin(q5)) + cos(q7)*(cos(q6)*(cos(q3)*sin(q2)*sin(q5) - cos(q4)*cos(q5)*sin(q2)*sin(q3)) - sin(q2)*sin(q3)*sin(q4)*sin(q6)))
+        
+        J_44 = (sin(q7)*(sin(q6)*(sin(q4)*(cos(q1)*sin(q3) + cos(q2)*cos(q3)*sin(q1)) - cos(q4)*sin(q1)*sin(q2)) + cos(q6)*(cos(q5)*(cos(q4)*(cos(q1)*sin(q3) + cos(q2)*cos(q3)*sin(q1)) + sin(q1)*sin(q2)*sin(q4)) - sin(q5)*(cos(q1)*cos(q3) - cos(q2)*sin(q1)*sin(q3)))) + cos(q7)*(sin(q5)*(cos(q4)*(cos(q1)*sin(q3) + cos(q2)*cos(q3)*sin(q1)) + sin(q1)*sin(q2)*sin(q4)) + cos(q5)*(cos(q1)*cos(q3) - cos(q2)*sin(q1)*sin(q3))))\
+              *(sin(q7)*(sin(q6)*(cos(q2)*sin(q4) - cos(q3)*cos(q4)*sin(q2)) + cos(q5)*cos(q6)*(cos(q2)*cos(q4) + cos(q3)*sin(q2)*sin(q4))) + cos(q7)*sin(q5)*(cos(q2)*cos(q4) + cos(q3)*sin(q2)*sin(q4)))\
+              +(cos(q7)*(sin(q6)*(sin(q4)*(cos(q1)*sin(q3) + cos(q2)*cos(q3)*sin(q1)) - cos(q4)*sin(q1)*sin(q2)) + cos(q6)*(cos(q5)*(cos(q4)*(cos(q1)*sin(q3) + cos(q2)*cos(q3)*sin(q1)) + sin(q1)*sin(q2)*sin(q4)) - sin(q5)*(cos(q1)*cos(q3) - cos(q2)*sin(q1)*sin(q3)))) - sin(q7)*(sin(q5)*(cos(q4)*(cos(q1)*sin(q3) + cos(q2)*cos(q3)*sin(q1)) + sin(q1)*sin(q2)*sin(q4)) + cos(q5)*(cos(q1)*cos(q3) - cos(q2)*sin(q1)*sin(q3))))\
+              *(cos(q7)*(sin(q6)*(cos(q2)*sin(q4) - cos(q3)*cos(q4)*sin(q2)) + cos(q5)*cos(q6)*(cos(q2)*cos(q4) + cos(q3)*sin(q2)*sin(q4))) - sin(q5)*sin(q7)*(cos(q2)*cos(q4) + cos(q3)*sin(q2)*sin(q4)))\
+              +(cos(q6)*(sin(q4)*(cos(q1)*sin(q3) + cos(q2)*cos(q3)*sin(q1)) - cos(q4)*sin(q1)*sin(q2)) - sin(q6)*(cos(q5)*(cos(q4)*(cos(q1)*sin(q3) + cos(q2)*cos(q3)*sin(q1)) + sin(q1)*sin(q2)*sin(q4)) - sin(q5)*(cos(q1)*cos(q3) - cos(q2)*sin(q1)*sin(q3))))\
+              *(cos(q6)*(cos(q2)*sin(q4) - cos(q3)*cos(q4)*sin(q2)) - cos(q5)*sin(q6)*(cos(q2)*cos(q4) + cos(q3)*sin(q2)*sin(q4)))
+     
+        J_45 = (sin(q7)*(sin(q6)*(sin(q4)*(cos(q1)*sin(q3) + cos(q2)*cos(q3)*sin(q1)) - cos(q4)*sin(q1)*sin(q2)) + cos(q6)*(cos(q5)*(cos(q4)*(cos(q1)*sin(q3) + cos(q2)*cos(q3)*sin(q1)) + sin(q1)*sin(q2)*sin(q4)) - sin(q5)*(cos(q1)*cos(q3) - cos(q2)*sin(q1)*sin(q3)))) + cos(q7)*(sin(q5)*(cos(q4)*(cos(q1)*sin(q3) + cos(q2)*cos(q3)*sin(q1)) + sin(q1)*sin(q2)*sin(q4)) + cos(q5)*(cos(q1)*cos(q3) - cos(q2)*sin(q1)*sin(q3))))\
+              *(cos(q7)*(cos(q5)*(cos(q2)*sin(q4) - cos(q3)*cos(q4)*sin(q2)) - sin(q2)*sin(q3)*sin(q5)) - cos(q6)*sin(q7)*(sin(q5)*(cos(q2)*sin(q4) - cos(q3)*cos(q4)*sin(q2)) + cos(q5)*sin(q2)*sin(q3)))\
+              -(cos(q7)*(sin(q6)*(sin(q4)*(cos(q1)*sin(q3) + cos(q2)*cos(q3)*sin(q1)) - cos(q4)*sin(q1)*sin(q2)) + cos(q6)*(cos(q5)*(cos(q4)*(cos(q1)*sin(q3) + cos(q2)*cos(q3)*sin(q1)) + sin(q1)*sin(q2)*sin(q4)) - sin(q5)*(cos(q1)*cos(q3) - cos(q2)*sin(q1)*sin(q3)))) - sin(q7)*(sin(q5)*(cos(q4)*(cos(q1)*sin(q3) + cos(q2)*cos(q3)*sin(q1)) + sin(q1)*sin(q2)*sin(q4)) + cos(q5)*(cos(q1)*cos(q3) - cos(q2)*sin(q1)*sin(q3))))\
+              *(sin(q7)*(cos(q5)*(cos(q2)*sin(q4) - cos(q3)*cos(q4)*sin(q2)) - sin(q2)*sin(q3)*sin(q5)) + cos(q6)*cos(q7)*(sin(q5)*(cos(q2)*sin(q4) - cos(q3)*cos(q4)*sin(q2)) + cos(q5)*sin(q2)*sin(q3)))\
+              +sin(q6)*(sin(q5)*(cos(q2)*sin(q4) - cos(q3)*cos(q4)*sin(q2)) + cos(q5)*sin(q2)*sin(q3))\
+              *(cos(q6)*(sin(q4)*(cos(q1)*sin(q3) + cos(q2)*cos(q3)*sin(q1)) - cos(q4)*sin(q1)*sin(q2)) - sin(q6)*(cos(q5)*(cos(q4)*(cos(q1)*sin(q3) + cos(q2)*cos(q3)*sin(q1)) + sin(q1)*sin(q2)*sin(q4)) - sin(q5)*(cos(q1)*cos(q3) - cos(q2)*sin(q1)*sin(q3))))
+        
+        J_46 = -(cos(q6)*(sin(q4)*(cos(q1)*sin(q3) + cos(q2)*cos(q3)*sin(q1)) - cos(q4)*sin(q1)*sin(q2)) - sin(q6)*(cos(q5)*(cos(q4)*(cos(q1)*sin(q3) + cos(q2)*cos(q3)*sin(q1)) + sin(q1)*sin(q2)*sin(q4)) - sin(q5)*(cos(q1)*cos(q3) - cos(q2)*sin(q1)*sin(q3))))\
+               *(cos(q6)*(cos(q5)*(cos(q2)*sin(q4) - cos(q3)*cos(q4)*sin(q2)) - sin(q2)*sin(q3)*sin(q5)) - sin(q6)*(cos(q2)*cos(q4) + cos(q3)*sin(q2)*sin(q4)))\
+               -cos(q7)*(cos(q7)*(sin(q6)*(sin(q4)*(cos(q1)*sin(q3) + cos(q2)*cos(q3)*sin(q1)) - cos(q4)*sin(q1)*sin(q2)) + cos(q6)*(cos(q5)*(cos(q4)*(cos(q1)*sin(q3) + cos(q2)*cos(q3)*sin(q1)) + sin(q1)*sin(q2)*sin(q4)) - sin(q5)*(cos(q1)*cos(q3) - cos(q2)*sin(q1)*sin(q3)))) - sin(q7)*(sin(q5)*(cos(q4)*(cos(q1)*sin(q3) + cos(q2)*cos(q3)*sin(q1)) + sin(q1)*sin(q2)*sin(q4)) + cos(q5)*(cos(q1)*cos(q3) - cos(q2)*sin(q1)*sin(q3))))\
+               *(sin(q6)*(cos(q5)*(cos(q2)*sin(q4) - cos(q3)*cos(q4)*sin(q2)) - sin(q2)*sin(q3)*sin(q5)) + cos(q6)*(cos(q2)*cos(q4) + cos(q3)*sin(q2)*sin(q4)))\
+               -sin(q7)*(sin(q7)*(sin(q6)*(sin(q4)*(cos(q1)*sin(q3) + cos(q2)*cos(q3)*sin(q1)) - cos(q4)*sin(q1)*sin(q2)) + cos(q6)*(cos(q5)*(cos(q4)*(cos(q1)*sin(q3) + cos(q2)*cos(q3)*sin(q1)) + sin(q1)*sin(q2)*sin(q4)) - sin(q5)*(cos(q1)*cos(q3) - cos(q2)*sin(q1)*sin(q3)))) + cos(q7)*(sin(q5)*(cos(q4)*(cos(q1)*sin(q3) + cos(q2)*cos(q3)*sin(q1)) + sin(q1)*sin(q2)*sin(q4)) + cos(q5)*(cos(q1)*cos(q3) - cos(q2)*sin(q1)*sin(q3))))\
+               *(sin(q6)*(cos(q5)*(cos(q2)*sin(q4) - cos(q3)*cos(q4)*sin(q2)) - sin(q2)*sin(q3)*sin(q5)) + cos(q6)*(cos(q2)*cos(q4) + cos(q3)*sin(q2)*sin(q4)))
+        
+        J_47 = -(cos(q7)*(sin(q5)*(cos(q2)*sin(q4) - cos(q3)*cos(q4)*sin(q2)) + cos(q5)*sin(q2)*sin(q3)) + sin(q7)*(cos(q6)*(cos(q5)*(cos(q2)*sin(q4) - cos(q3)*cos(q4)*sin(q2)) - sin(q2)*sin(q3)*sin(q5)) - sin(q6)*(cos(q2)*cos(q4) + cos(q3)*sin(q2)*sin(q4))))\
+               *(cos(q7)*(sin(q6)*(sin(q4)*(cos(q1)*sin(q3) + cos(q2)*cos(q3)*sin(q1)) - cos(q4)*sin(q1)*sin(q2)) + cos(q6)*(cos(q5)*(cos(q4)*(cos(q1)*sin(q3) + cos(q2)*cos(q3)*sin(q1)) + sin(q1)*sin(q2)*sin(q4)) - sin(q5)*(cos(q1)*cos(q3) - cos(q2)*sin(q1)*sin(q3)))) - sin(q7)*(sin(q5)*(cos(q4)*(cos(q1)*sin(q3) + cos(q2)*cos(q3)*sin(q1)) + sin(q1)*sin(q2)*sin(q4)) + cos(q5)*(cos(q1)*cos(q3) - cos(q2)*sin(q1)*sin(q3))))\
+                -(sin(q7)*(sin(q5)*(cos(q2)*sin(q4) - cos(q3)*cos(q4)*sin(q2)) + cos(q5)*sin(q2)*sin(q3)) - cos(q7)*(cos(q6)*(cos(q5)*(cos(q2)*sin(q4) - cos(q3)*cos(q4)*sin(q2)) - sin(q2)*sin(q3)*sin(q5)) - sin(q6)*(cos(q2)*cos(q4) + cos(q3)*sin(q2)*sin(q4))))\
+                *(sin(q7)*(sin(q6)*(sin(q4)*(cos(q1)*sin(q3) + cos(q2)*cos(q3)*sin(q1)) - cos(q4)*sin(q1)*sin(q2)) + cos(q6)*(cos(q5)*(cos(q4)*(cos(q1)*sin(q3) + cos(q2)*cos(q3)*sin(q1)) + sin(q1)*sin(q2)*sin(q4)) - sin(q5)*(cos(q1)*cos(q3) - cos(q2)*sin(q1)*sin(q3)))) + cos(q7)*(sin(q5)*(cos(q4)*(cos(q1)*sin(q3) + cos(q2)*cos(q3)*sin(q1)) + sin(q1)*sin(q2)*sin(q4)) + cos(q5)*(cos(q1)*cos(q3) - cos(q2)*sin(q1)*sin(q3))))
 
-        J_51 = 0
-        J_52 = 0
-        J_53 = 0
-        J_54 = 0
-        J_55 = 0
-        J_56 = 0
-        J_57 = 0
+        J_51 = (sin(q7)*(sin(q5)*(cos(q2)*sin(q4) - cos(q3)*cos(q4)*sin(q2)) + cos(q5)*sin(q2)*sin(q3)) - cos(q7)*(cos(q6)*(cos(q5)*(cos(q2)*sin(q4) - cos(q3)*cos(q4)*sin(q2)) - sin(q2)*sin(q3)*sin(q5)) - sin(q6)*(cos(q2)*cos(q4) + cos(q3)*sin(q2)*sin(q4))))\
+              *(cos(q7)*(sin(q6)*(sin(q4)*(cos(q1)*sin(q3) + cos(q2)*cos(q3)*sin(q1)) - cos(q4)*sin(q1)*sin(q2)) + cos(q6)*(cos(q5)*(cos(q4)*(cos(q1)*sin(q3) + cos(q2)*cos(q3)*sin(q1)) + sin(q1)*sin(q2)*sin(q4)) - sin(q5)*(cos(q1)*cos(q3) - cos(q2)*sin(q1)*sin(q3)))) - sin(q7)*(sin(q5)*(cos(q4)*(cos(q1)*sin(q3) + cos(q2)*cos(q3)*sin(q1)) + sin(q1)*sin(q2)*sin(q4)) + cos(q5)*(cos(q1)*cos(q3) - cos(q2)*sin(q1)*sin(q3))))\
+              -(cos(q7)*(sin(q5)*(cos(q2)*sin(q4) - cos(q3)*cos(q4)*sin(q2)) + cos(q5)*sin(q2)*sin(q3)) + sin(q7)*(cos(q6)*(cos(q5)*(cos(q2)*sin(q4) - cos(q3)*cos(q4)*sin(q2)) - sin(q2)*sin(q3)*sin(q5)) - sin(q6)*(cos(q2)*cos(q4) + cos(q3)*sin(q2)*sin(q4))))\
+              *(sin(q7)*(sin(q6)*(sin(q4)*(cos(q1)*sin(q3) + cos(q2)*cos(q3)*sin(q1)) - cos(q4)*sin(q1)*sin(q2)) + cos(q6)*(cos(q5)*(cos(q4)*(cos(q1)*sin(q3) + cos(q2)*cos(q3)*sin(q1)) + sin(q1)*sin(q2)*sin(q4)) - sin(q5)*(cos(q1)*cos(q3) - cos(q2)*sin(q1)*sin(q3)))) + cos(q7)*(sin(q5)*(cos(q4)*(cos(q1)*sin(q3) + cos(q2)*cos(q3)*sin(q1)) + sin(q1)*sin(q2)*sin(q4)) + cos(q5)*(cos(q1)*cos(q3) - cos(q2)*sin(q1)*sin(q3))))\
+              +(cos(q6)*(sin(q4)*(cos(q1)*sin(q3) + cos(q2)*cos(q3)*sin(q1)) - cos(q4)*sin(q1)*sin(q2)) - sin(q6)*(cos(q5)*(cos(q4)*(cos(q1)*sin(q3) + cos(q2)*cos(q3)*sin(q1)) + sin(q1)*sin(q2)*sin(q4)) - sin(q5)*(cos(q1)*cos(q3) - cos(q2)*sin(q1)*sin(q3))))\
+              *(sin(q6)*(cos(q5)*(cos(q2)*sin(q4) - cos(q3)*cos(q4)*sin(q2)) - sin(q2)*sin(q3)*sin(q5)) + cos(q6)*(cos(q2)*cos(q4) + cos(q3)*sin(q2)*sin(q4)))
+        
+        J_52 = (sin(q6)*(cos(q5)*(cos(q2)*sin(q4) - cos(q3)*cos(q4)*sin(q2)) - sin(q2)*sin(q3)*sin(q5)) + cos(q6)*(cos(q2)*cos(q4) + cos(q3)*sin(q2)*sin(q4)))\
+              *(cos(q6)*(cos(q1)*cos(q2)*cos(q4) + cos(q1)*cos(q3)*sin(q2)*sin(q4)) + sin(q6)*(cos(q5)*(cos(q1)*cos(q2)*sin(q4) - cos(q1)*cos(q3)*cos(q4)*sin(q2)) - cos(q1)*sin(q2)*sin(q3)*sin(q5)))\
+              -(cos(q7)*(sin(q5)*(cos(q2)*sin(q4) - cos(q3)*cos(q4)*sin(q2)) + cos(q5)*sin(q2)*sin(q3)) + sin(q7)*(cos(q6)*(cos(q5)*(cos(q2)*sin(q4) - cos(q3)*cos(q4)*sin(q2)) - sin(q2)*sin(q3)*sin(q5)) - sin(q6)*(cos(q2)*cos(q4) + cos(q3)*sin(q2)*sin(q4))))\
+              *(sin(q7)*(sin(q6)*(cos(q1)*cos(q2)*cos(q4) + cos(q1)*cos(q3)*sin(q2)*sin(q4)) - cos(q6)*(cos(q5)*(cos(q1)*cos(q2)*sin(q4) - cos(q1)*cos(q3)*cos(q4)*sin(q2)) - cos(q1)*sin(q2)*sin(q3)*sin(q5))) - cos(q7)*(sin(q5)*(cos(q1)*cos(q2)*sin(q4) - cos(q1)*cos(q3)*cos(q4)*sin(q2)) + cos(q1)*cos(q5)*sin(q2)*sin(q3)))\
+              +(sin(q7)*(sin(q5)*(cos(q2)*sin(q4) - cos(q3)*cos(q4)*sin(q2)) + cos(q5)*sin(q2)*sin(q3)) - cos(q7)*(cos(q6)*(cos(q5)*(cos(q2)*sin(q4) - cos(q3)*cos(q4)*sin(q2)) - sin(q2)*sin(q3)*sin(q5)) - sin(q6)*(cos(q2)*cos(q4) + cos(q3)*sin(q2)*sin(q4))))\
+              *(cos(q7)*(sin(q6)*(cos(q1)*cos(q2)*cos(q4) + cos(q1)*cos(q3)*sin(q2)*sin(q4)) - cos(q6)*(cos(q5)*(cos(q1)*cos(q2)*sin(q4) - cos(q1)*cos(q3)*cos(q4)*sin(q2)) - cos(q1)*sin(q2)*sin(q3)*sin(q5))) + sin(q7)*(sin(q5)*(cos(q1)*cos(q2)*sin(q4) - cos(q1)*cos(q3)*cos(q4)*sin(q2)) + cos(q1)*cos(q5)*sin(q2)*sin(q3)))
+        
+        J_53 = (cos(q7)*(sin(q5)*(cos(q2)*sin(q4) - cos(q3)*cos(q4)*sin(q2)) + cos(q5)*sin(q2)*sin(q3)) + sin(q7)*(cos(q6)*(cos(q5)*(cos(q2)*sin(q4) - cos(q3)*cos(q4)*sin(q2)) - sin(q2)*sin(q3)*sin(q5)) - sin(q6)*(cos(q2)*cos(q4) + cos(q3)*sin(q2)*sin(q4))))\
+              *(cos(q7)*(cos(q5)*(sin(q1)*sin(q3) - cos(q1)*cos(q2)*cos(q3)) - cos(q4)*sin(q5)*(cos(q3)*sin(q1) + cos(q1)*cos(q2)*sin(q3))) - sin(q7)*(cos(q6)*(sin(q5)*(sin(q1)*sin(q3) - cos(q1)*cos(q2)*cos(q3)) + cos(q4)*cos(q5)*(cos(q3)*sin(q1) + cos(q1)*cos(q2)*sin(q3))) + sin(q4)*sin(q6)*(cos(q3)*sin(q1) + cos(q1)*cos(q2)*sin(q3))))\
+              -(sin(q6)*(cos(q5)*(cos(q2)*sin(q4) - cos(q3)*cos(q4)*sin(q2)) - sin(q2)*sin(q3)*sin(q5)) + cos(q6)*(cos(q2)*cos(q4) + cos(q3)*sin(q2)*sin(q4)))\
+              *(sin(q6)*(sin(q5)*(sin(q1)*sin(q3) - cos(q1)*cos(q2)*cos(q3)) + cos(q4)*cos(q5)*(cos(q3)*sin(q1) + cos(q1)*cos(q2)*sin(q3))) - cos(q6)*sin(q4)*(cos(q3)*sin(q1) + cos(q1)*cos(q2)*sin(q3)))\
+              +(sin(q7)*(sin(q5)*(cos(q2)*sin(q4) - cos(q3)*cos(q4)*sin(q2)) + cos(q5)*sin(q2)*sin(q3)) - cos(q7)*(cos(q6)*(cos(q5)*(cos(q2)*sin(q4) - cos(q3)*cos(q4)*sin(q2)) - sin(q2)*sin(q3)*sin(q5)) - sin(q6)*(cos(q2)*cos(q4) + cos(q3)*sin(q2)*sin(q4))))\
+              *(sin(q7)*(cos(q5)*(sin(q1)*sin(q3) - cos(q1)*cos(q2)*cos(q3)) - cos(q4)*sin(q5)*(cos(q3)*sin(q1) + cos(q1)*cos(q2)*sin(q3))) + cos(q7)*(cos(q6)*(sin(q5)*(sin(q1)*sin(q3) - cos(q1)*cos(q2)*cos(q3)) + cos(q4)*cos(q5)*(cos(q3)*sin(q1) + cos(q1)*cos(q2)*sin(q3))) + sin(q4)*sin(q6)*(cos(q3)*sin(q1) + cos(q1)*cos(q2)*sin(q3))))
+        
+        J_54 = (sin(q6)*(cos(q5)*(cos(q2)*sin(q4) - cos(q3)*cos(q4)*sin(q2)) - sin(q2)*sin(q3)*sin(q5)) + cos(q6)*(cos(q2)*cos(q4) + cos(q3)*sin(q2)*sin(q4)))\
+              *(cos(q6)*(cos(q4)*(sin(q1)*sin(q3) - cos(q1)*cos(q2)*cos(q3)) - cos(q1)*sin(q2)*sin(q4)) + cos(q5)*sin(q6)*(sin(q4)*(sin(q1)*sin(q3) - cos(q1)*cos(q2)*cos(q3)) + cos(q1)*cos(q4)*sin(q2)))\
+              -(cos(q7)*(sin(q5)*(cos(q2)*sin(q4) - cos(q3)*cos(q4)*sin(q2)) + cos(q5)*sin(q2)*sin(q3)) + sin(q7)*(cos(q6)*(cos(q5)*(cos(q2)*sin(q4) - cos(q3)*cos(q4)*sin(q2)) - sin(q2)*sin(q3)*sin(q5)) - sin(q6)*(cos(q2)*cos(q4) + cos(q3)*sin(q2)*sin(q4))))\
+              *(sin(q7)*(sin(q6)*(cos(q4)*(sin(q1)*sin(q3) - cos(q1)*cos(q2)*cos(q3)) - cos(q1)*sin(q2)*sin(q4)) - cos(q5)*cos(q6)*(sin(q4)*(sin(q1)*sin(q3) - cos(q1)*cos(q2)*cos(q3)) + cos(q1)*cos(q4)*sin(q2))) - cos(q7)*sin(q5)*(sin(q4)*(sin(q1)*sin(q3) - cos(q1)*cos(q2)*cos(q3)) + cos(q1)*cos(q4)*sin(q2)))\
+              +(sin(q7)*(sin(q5)*(cos(q2)*sin(q4) - cos(q3)*cos(q4)*sin(q2)) + cos(q5)*sin(q2)*sin(q3)) - cos(q7)*(cos(q6)*(cos(q5)*(cos(q2)*sin(q4) - cos(q3)*cos(q4)*sin(q2)) - sin(q2)*sin(q3)*sin(q5)) - sin(q6)*(cos(q2)*cos(q4) + cos(q3)*sin(q2)*sin(q4))))\
+              *(cos(q7)*(sin(q6)*(cos(q4)*(sin(q1)*sin(q3) - cos(q1)*cos(q2)*cos(q3)) - cos(q1)*sin(q2)*sin(q4)) - cos(q5)*cos(q6)*(sin(q4)*(sin(q1)*sin(q3) - cos(q1)*cos(q2)*cos(q3)) + cos(q1)*cos(q4)*sin(q2))) + sin(q5)*sin(q7)*(sin(q4)*(sin(q1)*sin(q3) - cos(q1)*cos(q2)*cos(q3)) + cos(q1)*cos(q4)*sin(q2)))
+        
+        J_55 = sin(q6)*(sin(q5)*(cos(q4)*(sin(q1)*sin(q3) - cos(q1)*cos(q2)*cos(q3)) - cos(q1)*sin(q2)*sin(q4)) + cos(q5)*(cos(q3)*sin(q1) + cos(q1)*cos(q2)*sin(q3)))\
+              *(sin(q6)*(cos(q5)*(cos(q2)*sin(q4) - cos(q3)*cos(q4)*sin(q2)) - sin(q2)*sin(q3)*sin(q5)) + cos(q6)*(cos(q2)*cos(q4) + cos(q3)*sin(q2)*sin(q4)))\
+              -(cos(q7)*(cos(q5)*(cos(q4)*(sin(q1)*sin(q3) - cos(q1)*cos(q2)*cos(q3)) - cos(q1)*sin(q2)*sin(q4)) - sin(q5)*(cos(q3)*sin(q1) + cos(q1)*cos(q2)*sin(q3))) - cos(q6)*sin(q7)*(sin(q5)*(cos(q4)*(sin(q1)*sin(q3) - cos(q1)*cos(q2)*cos(q3)) - cos(q1)*sin(q2)*sin(q4)) + cos(q5)*(cos(q3)*sin(q1) + cos(q1)*cos(q2)*sin(q3))))\
+              *(cos(q7)*(sin(q5)*(cos(q2)*sin(q4) - cos(q3)*cos(q4)*sin(q2)) + cos(q5)*sin(q2)*sin(q3)) + sin(q7)*(cos(q6)*(cos(q5)*(cos(q2)*sin(q4) - cos(q3)*cos(q4)*sin(q2)) - sin(q2)*sin(q3)*sin(q5)) - sin(q6)*(cos(q2)*cos(q4) + cos(q3)*sin(q2)*sin(q4))))\
+              -(sin(q7)*(cos(q5)*(cos(q4)*(sin(q1)*sin(q3) - cos(q1)*cos(q2)*cos(q3)) - cos(q1)*sin(q2)*sin(q4)) - sin(q5)*(cos(q3)*sin(q1) + cos(q1)*cos(q2)*sin(q3))) + cos(q6)*cos(q7)*(sin(q5)*(cos(q4)*(sin(q1)*sin(q3) - cos(q1)*cos(q2)*cos(q3)) - cos(q1)*sin(q2)*sin(q4)) + cos(q5)*(cos(q3)*sin(q1) + cos(q1)*cos(q2)*sin(q3))))\
+              *(sin(q7)*(sin(q5)*(cos(q2)*sin(q4) - cos(q3)*cos(q4)*sin(q2)) + cos(q5)*sin(q2)*sin(q3)) - cos(q7)*(cos(q6)*(cos(q5)*(cos(q2)*sin(q4) - cos(q3)*cos(q4)*sin(q2)) - sin(q2)*sin(q3)*sin(q5)) - sin(q6)*(cos(q2)*cos(q4) + cos(q3)*sin(q2)*sin(q4))))
+        
+        J_56 = cos(q7)*(sin(q7)*(sin(q5)*(cos(q2)*sin(q4) - cos(q3)*cos(q4)*sin(q2)) + cos(q5)*sin(q2)*sin(q3)) - cos(q7)*(cos(q6)*(cos(q5)*(cos(q2)*sin(q4) - cos(q3)*cos(q4)*sin(q2)) - sin(q2)*sin(q3)*sin(q5)) - sin(q6)*(cos(q2)*cos(q4) + cos(q3)*sin(q2)*sin(q4))))\
+              *(cos(q6)*(sin(q4)*(sin(q1)*sin(q3) - cos(q1)*cos(q2)*cos(q3)) + cos(q1)*cos(q4)*sin(q2)) - sin(q6)*(cos(q5)*(cos(q4)*(sin(q1)*sin(q3) - cos(q1)*cos(q2)*cos(q3)) - cos(q1)*sin(q2)*sin(q4)) - sin(q5)*(cos(q3)*sin(q1) + cos(q1)*cos(q2)*sin(q3))))\
+              -(sin(q6)*(cos(q5)*(cos(q2)*sin(q4) - cos(q3)*cos(q4)*sin(q2)) - sin(q2)*sin(q3)*sin(q5)) + cos(q6)*(cos(q2)*cos(q4) + cos(q3)*sin(q2)*sin(q4)))\
+              *(sin(q6)*(sin(q4)*(sin(q1)*sin(q3) - cos(q1)*cos(q2)*cos(q3)) + cos(q1)*cos(q4)*sin(q2)) + cos(q6)*(cos(q5)*(cos(q4)*(sin(q1)*sin(q3) - cos(q1)*cos(q2)*cos(q3)) - cos(q1)*sin(q2)*sin(q4)) - sin(q5)*(cos(q3)*sin(q1) + cos(q1)*cos(q2)*sin(q3))))\
+              -sin(q7)*(cos(q7)*(sin(q5)*(cos(q2)*sin(q4) - cos(q3)*cos(q4)*sin(q2)) + cos(q5)*sin(q2)*sin(q3)) + sin(q7)*(cos(q6)*(cos(q5)*(cos(q2)*sin(q4) - cos(q3)*cos(q4)*sin(q2)) - sin(q2)*sin(q3)*sin(q5)) - sin(q6)*(cos(q2)*cos(q4) + cos(q3)*sin(q2)*sin(q4))))\
+              *(cos(q6)*(sin(q4)*(sin(q1)*sin(q3) - cos(q1)*cos(q2)*cos(q3)) + cos(q1)*cos(q4)*sin(q2)) - sin(q6)*(cos(q5)*(cos(q4)*(sin(q1)*sin(q3) - cos(q1)*cos(q2)*cos(q3)) - cos(q1)*sin(q2)*sin(q4)) - sin(q5)*(cos(q3)*sin(q1) + cos(q1)*cos(q2)*sin(q3))))
+        
+        J_57 = -(sin(q7)*(sin(q6)*(sin(q4)*(sin(q1)*sin(q3) - cos(q1)*cos(q2)*cos(q3)) + cos(q1)*cos(q4)*sin(q2)) + cos(q6)*(cos(q5)*(cos(q4)*(sin(q1)*sin(q3) - cos(q1)*cos(q2)*cos(q3)) - cos(q1)*sin(q2)*sin(q4)) - sin(q5)*(cos(q3)*sin(q1) + cos(q1)*cos(q2)*sin(q3)))) + cos(q7)*(sin(q5)*(cos(q4)*(sin(q1)*sin(q3) - cos(q1)*cos(q2)*cos(q3)) - cos(q1)*sin(q2)*sin(q4)) + cos(q5)*(cos(q3)*sin(q1) + cos(q1)*cos(q2)*sin(q3))))\
+               *(sin(q7)*(sin(q5)*(cos(q2)*sin(q4) - cos(q3)*cos(q4)*sin(q2)) + cos(q5)*sin(q2)*sin(q3)) - cos(q7)*(cos(q6)*(cos(q5)*(cos(q2)*sin(q4) - cos(q3)*cos(q4)*sin(q2)) - sin(q2)*sin(q3)*sin(q5)) - sin(q6)*(cos(q2)*cos(q4) + cos(q3)*sin(q2)*sin(q4))))\
+               -(cos(q7)*(sin(q6)*(sin(q4)*(sin(q1)*sin(q3) - cos(q1)*cos(q2)*cos(q3)) + cos(q1)*cos(q4)*sin(q2)) + cos(q6)*(cos(q5)*(cos(q4)*(sin(q1)*sin(q3) - cos(q1)*cos(q2)*cos(q3)) - cos(q1)*sin(q2)*sin(q4)) - sin(q5)*(cos(q3)*sin(q1) + cos(q1)*cos(q2)*sin(q3)))) - sin(q7)*(sin(q5)*(cos(q4)*(sin(q1)*sin(q3) - cos(q1)*cos(q2)*cos(q3)) - cos(q1)*sin(q2)*sin(q4)) + cos(q5)*(cos(q3)*sin(q1) + cos(q1)*cos(q2)*sin(q3))))\
+               *(cos(q7)*(sin(q5)*(cos(q2)*sin(q4) - cos(q3)*cos(q4)*sin(q2)) + cos(q5)*sin(q2)*sin(q3)) + sin(q7)*(cos(q6)*(cos(q5)*(cos(q2)*sin(q4) - cos(q3)*cos(q4)*sin(q2)) - sin(q2)*sin(q3)*sin(q5)) - sin(q6)*(cos(q2)*cos(q4) + cos(q3)*sin(q2)*sin(q4))))
 
-        J_61 = 0
-        J_62 = 0
-        J_63 = 0
-        J_64 = 0
-        J_65 = 0
-        J_66 = 0
-        J_67 = 0
+        J_61 = (cos(q6)*(sin(q4)*(sin(q1)*sin(q3) - cos(q1)*cos(q2)*cos(q3)) + cos(q1)*cos(q4)*sin(q2)) - sin(q6)*(cos(q5)*(cos(q4)*(sin(q1)*sin(q3) - cos(q1)*cos(q2)*cos(q3)) - cos(q1)*sin(q2)*sin(q4)) - sin(q5)*(cos(q3)*sin(q1) + cos(q1)*cos(q2)*sin(q3))))**2\
+              +(sin(q7)*(sin(q6)*(sin(q4)*(sin(q1)*sin(q3) - cos(q1)*cos(q2)*cos(q3)) + cos(q1)*cos(q4)*sin(q2)) + cos(q6)*(cos(q5)*(cos(q4)*(sin(q1)*sin(q3) - cos(q1)*cos(q2)*cos(q3)) - cos(q1)*sin(q2)*sin(q4)) - sin(q5)*(cos(q3)*sin(q1) + cos(q1)*cos(q2)*sin(q3)))) + cos(q7)*(sin(q5)*(cos(q4)*(sin(q1)*sin(q3) - cos(q1)*cos(q2)*cos(q3)) - cos(q1)*sin(q2)*sin(q4)) + cos(q5)*(cos(q3)*sin(q1) + cos(q1)*cos(q2)*sin(q3))))**2\
+              +(cos(q7)*(sin(q6)*(sin(q4)*(sin(q1)*sin(q3) - cos(q1)*cos(q2)*cos(q3)) + cos(q1)*cos(q4)*sin(q2)) + cos(q6)*(cos(q5)*(cos(q4)*(sin(q1)*sin(q3) - cos(q1)*cos(q2)*cos(q3)) - cos(q1)*sin(q2)*sin(q4)) - sin(q5)*(cos(q3)*sin(q1) + cos(q1)*cos(q2)*sin(q3)))) - sin(q7)*(sin(q5)*(cos(q4)*(sin(q1)*sin(q3) - cos(q1)*cos(q2)*cos(q3)) - cos(q1)*sin(q2)*sin(q4)) + cos(q5)*(cos(q3)*sin(q1) + cos(q1)*cos(q2)*sin(q3))))**2
+        
+        J_62 = (cos(q6)*(cos(q2)*cos(q4)*sin(q1) + cos(q3)*sin(q1)*sin(q2)*sin(q4)) + sin(q6)*(cos(q5)*(cos(q2)*sin(q1)*sin(q4) - cos(q3)*cos(q4)*sin(q1)*sin(q2)) - sin(q1)*sin(q2)*sin(q3)*sin(q5)))\
+              *(cos(q6)*(sin(q4)*(sin(q1)*sin(q3) - cos(q1)*cos(q2)*cos(q3)) + cos(q1)*cos(q4)*sin(q2)) - sin(q6)*(cos(q5)*(cos(q4)*(sin(q1)*sin(q3) - cos(q1)*cos(q2)*cos(q3)) - cos(q1)*sin(q2)*sin(q4)) - sin(q5)*(cos(q3)*sin(q1) + cos(q1)*cos(q2)*sin(q3))))\
+              -(sin(q7)*(sin(q6)*(sin(q4)*(sin(q1)*sin(q3) - cos(q1)*cos(q2)*cos(q3)) + cos(q1)*cos(q4)*sin(q2)) + cos(q6)*(cos(q5)*(cos(q4)*(sin(q1)*sin(q3) - cos(q1)*cos(q2)*cos(q3)) - cos(q1)*sin(q2)*sin(q4)) - sin(q5)*(cos(q3)*sin(q1) + cos(q1)*cos(q2)*sin(q3)))) + cos(q7)*(sin(q5)*(cos(q4)*(sin(q1)*sin(q3) - cos(q1)*cos(q2)*cos(q3)) - cos(q1)*sin(q2)*sin(q4)) + cos(q5)*(cos(q3)*sin(q1) + cos(q1)*cos(q2)*sin(q3))))\
+              *(cos(q7)*(sin(q5)*(cos(q2)*sin(q1)*sin(q4) - cos(q3)*cos(q4)*sin(q1)*sin(q2)) + cos(q5)*sin(q1)*sin(q2)*sin(q3)) - sin(q7)*(sin(q6)*(cos(q2)*cos(q4)*sin(q1) + cos(q3)*sin(q1)*sin(q2)*sin(q4)) - cos(q6)*(cos(q5)*(cos(q2)*sin(q1)*sin(q4) - cos(q3)*cos(q4)*sin(q1)*sin(q2)) - sin(q1)*sin(q2)*sin(q3)*sin(q5))))\
+              +(cos(q7)*(sin(q6)*(sin(q4)*(sin(q1)*sin(q3) - cos(q1)*cos(q2)*cos(q3)) + cos(q1)*cos(q4)*sin(q2)) + cos(q6)*(cos(q5)*(cos(q4)*(sin(q1)*sin(q3) - cos(q1)*cos(q2)*cos(q3)) - cos(q1)*sin(q2)*sin(q4)) - sin(q5)*(cos(q3)*sin(q1) + cos(q1)*cos(q2)*sin(q3)))) - sin(q7)*(sin(q5)*(cos(q4)*(sin(q1)*sin(q3) - cos(q1)*cos(q2)*cos(q3)) - cos(q1)*sin(q2)*sin(q4)) + cos(q5)*(cos(q3)*sin(q1) + cos(q1)*cos(q2)*sin(q3))))\
+              *(cos(q7)*(sin(q6)*(cos(q2)*cos(q4)*sin(q1) + cos(q3)*sin(q1)*sin(q2)*sin(q4)) - cos(q6)*(cos(q5)*(cos(q2)*sin(q1)*sin(q4) - cos(q3)*cos(q4)*sin(q1)*sin(q2)) - sin(q1)*sin(q2)*sin(q3)*sin(q5))) + sin(q7)*(sin(q5)*(cos(q2)*sin(q1)*sin(q4) - cos(q3)*cos(q4)*sin(q1)*sin(q2)) + cos(q5)*sin(q1)*sin(q2)*sin(q3)))
+        
+        J_63 = (sin(q7)*(sin(q6)*(sin(q4)*(sin(q1)*sin(q3) - cos(q1)*cos(q2)*cos(q3)) + cos(q1)*cos(q4)*sin(q2)) + cos(q6)*(cos(q5)*(cos(q4)*(sin(q1)*sin(q3) - cos(q1)*cos(q2)*cos(q3)) - cos(q1)*sin(q2)*sin(q4)) - sin(q5)*(cos(q3)*sin(q1) + cos(q1)*cos(q2)*sin(q3)))) + cos(q7)*(sin(q5)*(cos(q4)*(sin(q1)*sin(q3) - cos(q1)*cos(q2)*cos(q3)) - cos(q1)*sin(q2)*sin(q4)) + cos(q5)*(cos(q3)*sin(q1) + cos(q1)*cos(q2)*sin(q3))))\
+              *(cos(q7)*(cos(q5)*(cos(q1)*sin(q3) + cos(q2)*cos(q3)*sin(q1)) - cos(q4)*sin(q5)*(cos(q1)*cos(q3) - cos(q2)*sin(q1)*sin(q3))) - sin(q7)*(cos(q6)*(sin(q5)*(cos(q1)*sin(q3) + cos(q2)*cos(q3)*sin(q1)) + cos(q4)*cos(q5)*(cos(q1)*cos(q3) - cos(q2)*sin(q1)*sin(q3))) + sin(q4)*sin(q6)*(cos(q1)*cos(q3) - cos(q2)*sin(q1)*sin(q3))))\
+              -(cos(q7)*(sin(q6)*(sin(q4)*(sin(q1)*sin(q3) - cos(q1)*cos(q2)*cos(q3)) + cos(q1)*cos(q4)*sin(q2)) + cos(q6)*(cos(q5)*(cos(q4)*(sin(q1)*sin(q3) - cos(q1)*cos(q2)*cos(q3)) - cos(q1)*sin(q2)*sin(q4)) - sin(q5)*(cos(q3)*sin(q1) + cos(q1)*cos(q2)*sin(q3)))) - sin(q7)*(sin(q5)*(cos(q4)*(sin(q1)*sin(q3) - cos(q1)*cos(q2)*cos(q3)) - cos(q1)*sin(q2)*sin(q4)) + cos(q5)*(cos(q3)*sin(q1) + cos(q1)*cos(q2)*sin(q3))))\
+              *(sin(q7)*(cos(q5)*(cos(q1)*sin(q3) + cos(q2)*cos(q3)*sin(q1)) - cos(q4)*sin(q5)*(cos(q1)*cos(q3) - cos(q2)*sin(q1)*sin(q3))) + cos(q7)*(cos(q6)*(sin(q5)*(cos(q1)*sin(q3) + cos(q2)*cos(q3)*sin(q1)) + cos(q4)*cos(q5)*(cos(q1)*cos(q3) - cos(q2)*sin(q1)*sin(q3))) + sin(q4)*sin(q6)*(cos(q1)*cos(q3) - cos(q2)*sin(q1)*sin(q3))))\
+              +(sin(q6)*(sin(q5)*(cos(q1)*sin(q3) + cos(q2)*cos(q3)*sin(q1)) + cos(q4)*cos(q5)*(cos(q1)*cos(q3) - cos(q2)*sin(q1)*sin(q3))) - cos(q6)*sin(q4)*(cos(q1)*cos(q3) - cos(q2)*sin(q1)*sin(q3)))\
+              *(cos(q6)*(sin(q4)*(sin(q1)*sin(q3) - cos(q1)*cos(q2)*cos(q3)) + cos(q1)*cos(q4)*sin(q2)) - sin(q6)*(cos(q5)*(cos(q4)*(sin(q1)*sin(q3) - cos(q1)*cos(q2)*cos(q3)) - cos(q1)*sin(q2)*sin(q4)) - sin(q5)*(cos(q3)*sin(q1) + cos(q1)*cos(q2)*sin(q3))))
+        
+        J_64 = -(cos(q6)*(cos(q4)*(cos(q1)*sin(q3) + cos(q2)*cos(q3)*sin(q1)) + sin(q1)*sin(q2)*sin(q4)) + cos(q5)*sin(q6)*(sin(q4)*(cos(q1)*sin(q3) + cos(q2)*cos(q3)*sin(q1)) - cos(q4)*sin(q1)*sin(q2)))\
+               *(cos(q6)*(sin(q4)*(sin(q1)*sin(q3) - cos(q1)*cos(q2)*cos(q3)) + cos(q1)*cos(q4)*sin(q2)) - sin(q6)*(cos(q5)*(cos(q4)*(sin(q1)*sin(q3) - cos(q1)*cos(q2)*cos(q3)) - cos(q1)*sin(q2)*sin(q4)) - sin(q5)*(cos(q3)*sin(q1) + cos(q1)*cos(q2)*sin(q3))))\
+               -(sin(q7)*(sin(q6)*(sin(q4)*(sin(q1)*sin(q3) - cos(q1)*cos(q2)*cos(q3)) + cos(q1)*cos(q4)*sin(q2)) + cos(q6)*(cos(q5)*(cos(q4)*(sin(q1)*sin(q3) - cos(q1)*cos(q2)*cos(q3)) - cos(q1)*sin(q2)*sin(q4)) - sin(q5)*(cos(q3)*sin(q1) + cos(q1)*cos(q2)*sin(q3)))) + cos(q7)*(sin(q5)*(cos(q4)*(sin(q1)*sin(q3) - cos(q1)*cos(q2)*cos(q3)) - cos(q1)*sin(q2)*sin(q4)) + cos(q5)*(cos(q3)*sin(q1) + cos(q1)*cos(q2)*sin(q3))))\
+               *(sin(q7)*(sin(q6)*(cos(q4)*(cos(q1)*sin(q3) + cos(q2)*cos(q3)*sin(q1)) + sin(q1)*sin(q2)*sin(q4)) - cos(q5)*cos(q6)*(sin(q4)*(cos(q1)*sin(q3) + cos(q2)*cos(q3)*sin(q1)) - cos(q4)*sin(q1)*sin(q2))) - cos(q7)*sin(q5)*(sin(q4)*(cos(q1)*sin(q3) + cos(q2)*cos(q3)*sin(q1)) - cos(q4)*sin(q1)*sin(q2)))\
+               -(cos(q7)*(sin(q6)*(sin(q4)*(sin(q1)*sin(q3) - cos(q1)*cos(q2)*cos(q3)) + cos(q1)*cos(q4)*sin(q2)) + cos(q6)*(cos(q5)*(cos(q4)*(sin(q1)*sin(q3) - cos(q1)*cos(q2)*cos(q3)) - cos(q1)*sin(q2)*sin(q4)) - sin(q5)*(cos(q3)*sin(q1) + cos(q1)*cos(q2)*sin(q3)))) - sin(q7)*(sin(q5)*(cos(q4)*(sin(q1)*sin(q3) - cos(q1)*cos(q2)*cos(q3)) - cos(q1)*sin(q2)*sin(q4)) + cos(q5)*(cos(q3)*sin(q1) + cos(q1)*cos(q2)*sin(q3))))\
+               *(cos(q7)*(sin(q6)*(cos(q4)*(cos(q1)*sin(q3) + cos(q2)*cos(q3)*sin(q1)) + sin(q1)*sin(q2)*sin(q4)) - cos(q5)*cos(q6)*(sin(q4)*(cos(q1)*sin(q3) + cos(q2)*cos(q3)*sin(q1)) - cos(q4)*sin(q1)*sin(q2))) + sin(q5)*sin(q7)*(sin(q4)*(cos(q1)*sin(q3) + cos(q2)*cos(q3)*sin(q1)) - cos(q4)*sin(q1)*sin(q2)))
+        
+        J_65 = (cos(q7)*(sin(q6)*(sin(q4)*(sin(q1)*sin(q3) - cos(q1)*cos(q2)*cos(q3)) + cos(q1)*cos(q4)*sin(q2)) + cos(q6)*(cos(q5)*(cos(q4)*(sin(q1)*sin(q3) - cos(q1)*cos(q2)*cos(q3)) - cos(q1)*sin(q2)*sin(q4)) - sin(q5)*(cos(q3)*sin(q1) + cos(q1)*cos(q2)*sin(q3)))) - sin(q7)*(sin(q5)*(cos(q4)*(sin(q1)*sin(q3) - cos(q1)*cos(q2)*cos(q3)) - cos(q1)*sin(q2)*sin(q4)) + cos(q5)*(cos(q3)*sin(q1) + cos(q1)*cos(q2)*sin(q3))))\
+              *(sin(q7)*(cos(q5)*(cos(q4)*(cos(q1)*sin(q3) + cos(q2)*cos(q3)*sin(q1)) + sin(q1)*sin(q2)*sin(q4)) - sin(q5)*(cos(q1)*cos(q3) - cos(q2)*sin(q1)*sin(q3))) + cos(q6)*cos(q7)*(sin(q5)*(cos(q4)*(cos(q1)*sin(q3) + cos(q2)*cos(q3)*sin(q1)) + sin(q1)*sin(q2)*sin(q4)) + cos(q5)*(cos(q1)*cos(q3) - cos(q2)*sin(q1)*sin(q3))))\
+              -(sin(q7)*(sin(q6)*(sin(q4)*(sin(q1)*sin(q3) - cos(q1)*cos(q2)*cos(q3)) + cos(q1)*cos(q4)*sin(q2)) + cos(q6)*(cos(q5)*(cos(q4)*(sin(q1)*sin(q3) - cos(q1)*cos(q2)*cos(q3)) - cos(q1)*sin(q2)*sin(q4)) - sin(q5)*(cos(q3)*sin(q1) + cos(q1)*cos(q2)*sin(q3)))) + cos(q7)*(sin(q5)*(cos(q4)*(sin(q1)*sin(q3) - cos(q1)*cos(q2)*cos(q3)) - cos(q1)*sin(q2)*sin(q4)) + cos(q5)*(cos(q3)*sin(q1) + cos(q1)*cos(q2)*sin(q3))))\
+              *(cos(q7)*(cos(q5)*(cos(q4)*(cos(q1)*sin(q3) + cos(q2)*cos(q3)*sin(q1)) + sin(q1)*sin(q2)*sin(q4)) - sin(q5)*(cos(q1)*cos(q3) - cos(q2)*sin(q1)*sin(q3))) - cos(q6)*sin(q7)*(sin(q5)*(cos(q4)*(cos(q1)*sin(q3) + cos(q2)*cos(q3)*sin(q1)) + sin(q1)*sin(q2)*sin(q4)) + cos(q5)*(cos(q1)*cos(q3) - cos(q2)*sin(q1)*sin(q3))))\
+              -sin(q6)*(sin(q5)*(cos(q4)*(cos(q1)*sin(q3) + cos(q2)*cos(q3)*sin(q1)) + sin(q1)*sin(q2)*sin(q4)) + cos(q5)*(cos(q1)*cos(q3) - cos(q2)*sin(q1)*sin(q3)))\
+              *(cos(q6)*(sin(q4)*(sin(q1)*sin(q3) - cos(q1)*cos(q2)*cos(q3)) + cos(q1)*cos(q4)*sin(q2)) - sin(q6)*(cos(q5)*(cos(q4)*(sin(q1)*sin(q3) - cos(q1)*cos(q2)*cos(q3)) - cos(q1)*sin(q2)*sin(q4)) - sin(q5)*(cos(q3)*sin(q1) + cos(q1)*cos(q2)*sin(q3))))
+        
+        J_66 = (sin(q6)*(sin(q4)*(cos(q1)*sin(q3) + cos(q2)*cos(q3)*sin(q1)) - cos(q4)*sin(q1)*sin(q2)) + cos(q6)*(cos(q5)*(cos(q4)*(cos(q1)*sin(q3) + cos(q2)*cos(q3)*sin(q1)) + sin(q1)*sin(q2)*sin(q4)) - sin(q5)*(cos(q1)*cos(q3) - cos(q2)*sin(q1)*sin(q3))))\
+              *(cos(q6)*(sin(q4)*(sin(q1)*sin(q3) - cos(q1)*cos(q2)*cos(q3)) + cos(q1)*cos(q4)*sin(q2)) - sin(q6)*(cos(q5)*(cos(q4)*(sin(q1)*sin(q3) - cos(q1)*cos(q2)*cos(q3)) - cos(q1)*sin(q2)*sin(q4)) - sin(q5)*(cos(q3)*sin(q1) + cos(q1)*cos(q2)*sin(q3))))\
+              -cos(q7)*(cos(q7)*(sin(q6)*(sin(q4)*(sin(q1)*sin(q3) - cos(q1)*cos(q2)*cos(q3)) + cos(q1)*cos(q4)*sin(q2)) + cos(q6)*(cos(q5)*(cos(q4)*(sin(q1)*sin(q3) - cos(q1)*cos(q2)*cos(q3)) - cos(q1)*sin(q2)*sin(q4)) - sin(q5)*(cos(q3)*sin(q1) + cos(q1)*cos(q2)*sin(q3)))) - sin(q7)*(sin(q5)*(cos(q4)*(sin(q1)*sin(q3) - cos(q1)*cos(q2)*cos(q3)) - cos(q1)*sin(q2)*sin(q4)) + cos(q5)*(cos(q3)*sin(q1) + cos(q1)*cos(q2)*sin(q3))))\
+              *(cos(q6)*(sin(q4)*(cos(q1)*sin(q3) + cos(q2)*cos(q3)*sin(q1)) - cos(q4)*sin(q1)*sin(q2)) - sin(q6)*(cos(q5)*(cos(q4)*(cos(q1)*sin(q3) + cos(q2)*cos(q3)*sin(q1)) + sin(q1)*sin(q2)*sin(q4)) - sin(q5)*(cos(q1)*cos(q3) - cos(q2)*sin(q1)*sin(q3))))\
+              -sin(q7)*(sin(q7)*(sin(q6)*(sin(q4)*(sin(q1)*sin(q3) - cos(q1)*cos(q2)*cos(q3)) + cos(q1)*cos(q4)*sin(q2)) + cos(q6)*(cos(q5)*(cos(q4)*(sin(q1)*sin(q3) - cos(q1)*cos(q2)*cos(q3)) - cos(q1)*sin(q2)*sin(q4)) - sin(q5)*(cos(q3)*sin(q1) + cos(q1)*cos(q2)*sin(q3)))) + cos(q7)*(sin(q5)*(cos(q4)*(sin(q1)*sin(q3) - cos(q1)*cos(q2)*cos(q3)) - cos(q1)*sin(q2)*sin(q4)) + cos(q5)*(cos(q3)*sin(q1) + cos(q1)*cos(q2)*sin(q3))))\
+              *(cos(q6)*(sin(q4)*(cos(q1)*sin(q3) + cos(q2)*cos(q3)*sin(q1)) - cos(q4)*sin(q1)*sin(q2)) - sin(q6)*(cos(q5)*(cos(q4)*(cos(q1)*sin(q3) + cos(q2)*cos(q3)*sin(q1)) + sin(q1)*sin(q2)*sin(q4)) - sin(q5)*(cos(q1)*cos(q3) - cos(q2)*sin(q1)*sin(q3))))
+        
+        J_67 = sin(q2)*sin(q3)*sin(q5)*sin(q6) - cos(q3)*cos(q6)*sin(q2)*sin(q4) - cos(q2)*cos(q5)*sin(q4)*sin(q6) - cos(q2)*cos(q4)*cos(q6) + cos(q3)*cos(q4)*cos(q5)*sin(q2)*sin(q6)
 
         J = np.matrix([ [ J_11 , J_12 , J_13 , J_14 , J_15 , J_16 , J_17 ],\
                         [ J_21 , J_22 , J_23 , J_24 , J_25 , J_26 , J_27 ],\
@@ -102,57 +268,57 @@ class xArm7_kinematics():
         return J
 
     def tf_A01(self, r_joints_array):
-        tf = np.matrix([[1 , 0 , 0 , 0],\
-                        [0 , 1 , 0 , 0],\
-                        [0 , 0 , 1 , 0],\
-                        [0 , 0 , 0 , 1]])
+        tf = np.matrix([[cos(r_joints_array[0]), -sin(r_joints_array[0]), 0, 0],\
+                        [sin(r_joints_array[0]),  cos(r_joints_array[0]), 0, 0],\
+                        [0, 0, 1, self.l1],\
+                        [0, 0, 0, 1]])
         return tf
 
     def tf_A02(self, r_joints_array):
-        tf_A12 = np.matrix([[1 , 0 , 0 , 0],\
-                            [0 , 1 , 0 , 0],\
-                            [0 , 0 , 1 , 0],\
-                            [0 , 0 , 0 , 1]])
+        tf_A12 = np.matrix([[cos(r_joints_array[1]), -sin(r_joints_array[1]), 0, 0],\
+                            [0, 0, 1, 0],\
+                            [-sin(r_joints_array[1]), 0, -cos(r_joints_array[1]), 0],\
+                            [0, 0 ,0, 1]])
         tf = np.dot( self.tf_A01(r_joints_array), tf_A12 )
         return tf
 
     def tf_A03(self, r_joints_array):
-        tf_A23 = np.matrix([[1 , 0 , 0 , 0],\
-                            [0 , 1 , 0 , 0],\
-                            [0 , 0 , 1 , 0],\
-                            [0 , 0 , 0 , 1]])
+        tf_A23 = np.matrix([[cos(r_joints_array[2]), -sin(r_joints_array[2]), 0, 0],\
+                            [0, 0, -1, -self.l2],\
+                            [-sin(r_joints_array[2]), 0, cos(r_joints_array[2]), 0],\
+                            [0, 0, 0, 1]])
         tf = np.dot( self.tf_A02(r_joints_array), tf_A23 )
         return tf
 
     def tf_A04(self, r_joints_array):
-        tf_A34 = np.matrix([[1 , 0 , 0 , 0],\
-                            [0 , 1 , 0 , 0],\
-                            [0 , 0 , 1 , 0],\
-                            [0 , 0 , 0 , 1]])
+        tf_A34 = np.matrix([[cos(r_joints_array[3]), -sin(r_joints_array[3]), 0, self.l3],\
+                            [0, 0, -1, 0],\
+                            [sin(r_joints_array[3]), 0, cos(r_joints_array[3]), 0],\
+                            [0, 0, 0, 1]])
         tf = np.dot( self.tf_A03(r_joints_array), tf_A34 )
         return tf
 
     def tf_A05(self, r_joints_array):
-        tf_A45 = np.matrix([[1 , 0 , 0 , 0],\
-                            [0 , 1 , 0 , 0],\
-                            [0 , 0 , 1 , 0],\
-                            [0 , 0 , 0 , 1]])
+        tf_A45 = np.matrix([[cos(r_joints_array[4]), -sin(r_joints_array[4]), 0, self.l4*sin(self.theta1)],\
+                            [0, 0, -1, -self.l4*cos(self.theta1)],\
+                            [sin(r_joints_array[4]), 0, cos(r_joints_array[4]), 0],\
+                            [0, 0, 0, 1]])
         tf = np.dot( self.tf_A04(r_joints_array), tf_A45 )
         return tf
 
     def tf_A06(self, r_joints_array):
-        tf_A56 = np.matrix([[1 , 0 , 0 , 0],\
-                            [0 , 1 , 0 , 0],\
-                            [0 , 0 , 1 , 0],\
-                            [0 , 0 , 0 , 1]])
+        tf_A56 = np.matrix([[cos(r_joints_array[5]), -sin(r_joints_array[5]), 0, 0],\
+                            [0, 0, -1, 0],\
+                            [sin(r_joints_array[5]), 0, cos(r_joints_array[5]), 0],\
+                            [0, 0, 0, 1]])
         tf = np.dot( self.tf_A05(r_joints_array), tf_A56 )
         return tf
 
     def tf_A07(self, r_joints_array):
-        tf_A67 = np.matrix([[1 , 0 , 0 , 0],\
-                            [0 , 1 , 0 , 0],\
-                            [0 , 0 , 1 , 0],\
-                            [0 , 0 , 0 , 1]])
+        tf_A67 = np.matrix([[cos(r_joints_array[6]), -sin(r_joints_array[6]), 0, self.l5*sin(self.theta3)],\
+                            [0, 0, 1, self.l5*cos(self.theta2)],\
+                            [-sin(r_joints_array[6]), 0, -cos(r_joints_array[6]), 0],\
+                            [0, 0, 0, 1]])
         tf = np.dot( self.tf_A06(r_joints_array), tf_A67 )
         return tf
 
