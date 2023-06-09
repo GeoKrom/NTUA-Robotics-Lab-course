@@ -83,14 +83,20 @@ class xArm7_controller():
 
             # Compute each transformation matrix wrt the base frame from joints' angular positions
             self.A01 = self.kinematics.tf_A01(self.joint_angpos)
+            self.A02 = self.kinematics.tf_A02(self.joint_angpos)
+            self.A03 = self.kinematics.tf_A03(self.joint_angpos)
+            self.A04 = self.kinematics.tf_A04(self.joint_angpos)
+            self.A05 = self.kinematics.tf_A05(self.joint_angpos)
+            self.A06 = self.kinematics.tf_A06(self.joint_angpos)
+            self.A07 = self.kinematics.tf_A07(self.joint_angpos)
 
-            """
-            INSERT YOUR MAIN CODE HERE
-            joint_angles = self.kinematics.compute_angles(...)
+            
+            # INSERT YOUR MAIN CODE HERE
+            joint_angles = self.kinematics.compute_angles(self.A07[1:3,4])
             self.joint_angpos[0] = joint_angles[0]
             self.joint_angpos[1] = joint_angles[1]
             self.joint_angpos[3] = joint_angles[3]
-            """
+            
 
             # Publish the new joint's angular positions
             self.joint1_pos_pub.publish(self.joint_angpos[0])
