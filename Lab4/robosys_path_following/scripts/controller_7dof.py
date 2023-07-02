@@ -13,6 +13,7 @@ from math import sin, cos, atan2, pi, sqrt
 from numpy.linalg import inv, det, norm, pinv
 import numpy as np
 import time as t
+import trajectory as tg
 
 # Arm parameters
 # xArm7 kinematics class
@@ -58,7 +59,7 @@ class xArm7_controller():
         #Publishing rate
         self.period = 1.0/rate
         self.pub_rate = rospy.Rate(rate)
-
+        self.p_real = None
         self.publish()
 
     #SENSING CALLBACKS
@@ -81,9 +82,20 @@ class xArm7_controller():
         tmp_rate.sleep()
         print("The system is ready to execute your algorithm...")
 
+        Pi = np.matrix([0.6043, -0.2000, 0.1508, pi, 0, 0]).reshape(6,1)
+        Pf = np.matrix([0.6043, 0.200, 0.1508, pi, 0, 0]).reshape(6,1)
+    
+        # Gain matrix
+        K = np.matrix([[5, 0, 0, 0, 0, 0],
+                      [0, 4, 0, 0, 0, 0],
+                      [0, 0, 3, 0, 0, 0],
+                      [0, 0, 0, 3, 0, 0],
+                      [0, 0, 0, 0, 4, 0],
+                      [0, 0, 0, 0, 0, 3]])
+    
         rostime_now = rospy.get_rostime()
         time_now = rostime_now.nsecs
-
+        
         while not rospy.is_shutdown():
 
             # Compute each transformation matrix wrt the base frame from joints' angular positions
@@ -91,19 +103,27 @@ class xArm7_controller():
 
             A07_real = self.kinematics.tf_A07(self.joint_states.position)
             ee_pos = A07_real[0:3,3]
-            ee_ori = self.kinematics.rotationMatrixToEulerAngles( A07_real[0:3,0:3] )
-
+            ee_ori = (self.kinematics.rotationMatrixToEulerAngles(A07_real[0:3,0:3])).reshape(3,1)
             # Compute jacobian matrix
             J = self.kinematics.compute_jacobian(self.joint_angpos)
+            
             # pseudoinverse jacobian
             pinvJ = pinv(J)
-
-            """
-            INSERT YOUR MAIN CODE HERE
-
-            self.joint_angvel[0] = ...
-            """
-
+            
+            traj = tg.TrajectoryGen(Pi, Pf)
+            
+            self.p_real = np.concatenate([ee_pos, ee_ori])
+            # print(self.p_real)
+            p_desired, p_dot_desired = traj.polynomialTrajectory(rostime_now.secs)
+            
+            # INSERT YOUR MAIN CODE HERE
+            q_dot = np.dot(pinvJ,(p_dot_desired + np.dot(K, p_desired - self.p_real)))
+           
+            self.joint_angvel = np.squeeze(np.asarray(q_dot))
+            
+            print("Angular Velocity: ")
+            print(self.joint_angvel)
+            
             # Convertion to angular position after integrating the angular speed in time
             # Calculate time interval
             time_prev = time_now
@@ -112,7 +132,8 @@ class xArm7_controller():
             dt = (time_now - time_prev)/1e9
             # Integration
             self.joint_angpos = np.add(self.joint_angpos, self.joint_angvel*dt)
-
+            print("Angular Position: ")
+            print(self.joint_angpos)
             # Publish the new joint's angular positions
             self.joint1_pos_pub.publish(self.joint_angpos[0])
             self.joint2_pos_pub.publish(self.joint_angpos[1])

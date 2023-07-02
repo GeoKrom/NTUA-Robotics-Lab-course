@@ -6,7 +6,7 @@ Compute state space kinematic matrices for xArm7 robot arm (5 links, 7 joints)
 
 import numpy as np
 import math
-from math import cos, sin
+from math import cos, sin, atan2, pow, sqrt
 
 # Checks if a matrix is a valid rotation matrix.
 def isRotationMatrix(R) :
@@ -31,14 +31,26 @@ class xArm7_kinematics():
         pass
 
     def compute_angles(self, ee_position):
-
-        joint_1 = 0
-        joint_2 = 0
+        
+        joint_1 = atan2(ee_position[1], ee_position[0])
         joint_3 = 0
-        joint_4 = 0
         joint_5 = 0
         joint_6 = 0.75
         joint_7 = 0
+
+        d1 = sqrt(pow(ee_position[0],2) + pow(ee_position[1],2))
+        L = 0.5*(pow(d1,2) + pow(ee_position[2] - self.l1, 2) - pow(self.l2, 2) - pow(self.l3, 2)- pow(self.l4, 2)- pow(self.l5, 2) - 2*self.l4*self.l5*cos(0.75 + self.theta1 - self.theta2))
+        k1 = -self.l2*self.l5*cos(self.theta2 - 0.75) + self.l3*self.l5*sin(self.theta2 - 0.75) - self.l2*self.l4*cos(self.theta1) + self.l3*self.l4*sin(self.theta1)
+        k2 =  self.l2*self.l5*sin(self.theta2 - 0.75) + self.l3*self.l5*cos(self.theta2 - 0.75) + self.l2*self.l4*sin(self.theta1) + self.l3*self.l4*cos(self.theta1)
+        r1 = sqrt(pow(k1,2) + pow(k2, 2))
+        
+        joint_4 = atan2(L, sqrt(pow(r1, 2) - pow(L, 2))) - atan2(k1, k2)
+        
+        k3 = self.l2 - self.l4*cos(joint_4 + self.theta1) - self.l5*cos(joint_6 - joint_4 - self.theta2)
+        k4 = self.l3 + self.l4*sin(joint_4 + self.theta1) - self.l5*sin(joint_6 - joint_4 - self.theta2)
+        r2 = sqrt(pow(k3,2) + pow(k4, 2))
+        
+        joint_2 = atan2(sqrt(pow(r2, 2) - pow((ee_position[2] - self.l1), 2)), ee_position[2] - self.l1) - atan2(k4, k3)
 
         joint_angles = np.matrix([ joint_1, joint_2, joint_3, joint_4, joint_5, joint_6, joint_7 ])
 
@@ -249,7 +261,7 @@ class xArm7_kinematics():
               *(cos(r_joints_array[6])*(cos(r_joints_array[4])*(cos(r_joints_array[3])*(cos(r_joints_array[0])*sin(r_joints_array[2]) + cos(r_joints_array[1])*cos(r_joints_array[2])*sin(r_joints_array[0])) + sin(r_joints_array[0])*sin(r_joints_array[1])*sin(r_joints_array[3])) - sin(r_joints_array[4])*(cos(r_joints_array[0])*cos(r_joints_array[2]) - cos(r_joints_array[1])*sin(r_joints_array[0])*sin(r_joints_array[2]))) - cos(r_joints_array[5])*sin(r_joints_array[6])*(sin(r_joints_array[4])*(cos(r_joints_array[3])*(cos(r_joints_array[0])*sin(r_joints_array[2]) + cos(r_joints_array[1])*cos(r_joints_array[2])*sin(r_joints_array[0])) + sin(r_joints_array[0])*sin(r_joints_array[1])*sin(r_joints_array[3])) + cos(r_joints_array[4])*(cos(r_joints_array[0])*cos(r_joints_array[2]) - cos(r_joints_array[1])*sin(r_joints_array[0])*sin(r_joints_array[2]))))\
               -sin(r_joints_array[5])*(sin(r_joints_array[4])*(cos(r_joints_array[3])*(cos(r_joints_array[0])*sin(r_joints_array[2]) + cos(r_joints_array[1])*cos(r_joints_array[2])*sin(r_joints_array[0])) + sin(r_joints_array[0])*sin(r_joints_array[1])*sin(r_joints_array[3])) + cos(r_joints_array[4])*(cos(r_joints_array[0])*cos(r_joints_array[2]) - cos(r_joints_array[1])*sin(r_joints_array[0])*sin(r_joints_array[2])))\
               *(cos(r_joints_array[5])*(sin(r_joints_array[3])*(sin(r_joints_array[0])*sin(r_joints_array[2]) - cos(r_joints_array[0])*cos(r_joints_array[1])*cos(r_joints_array[2])) + cos(r_joints_array[0])*cos(r_joints_array[3])*sin(r_joints_array[1])) - sin(r_joints_array[5])*(cos(r_joints_array[4])*(cos(r_joints_array[3])*(sin(r_joints_array[0])*sin(r_joints_array[2]) - cos(r_joints_array[0])*cos(r_joints_array[1])*cos(r_joints_array[2])) - cos(r_joints_array[0])*sin(r_joints_array[1])*sin(r_joints_array[3])) - sin(r_joints_array[4])*(cos(r_joints_array[2])*sin(r_joints_array[0]) + cos(r_joints_array[0])*cos(r_joints_array[1])*sin(r_joints_array[2]))))
-        
+ 
         J_66 = (sin(r_joints_array[5])*(sin(r_joints_array[3])*(cos(r_joints_array[0])*sin(r_joints_array[2]) + cos(r_joints_array[1])*cos(r_joints_array[2])*sin(r_joints_array[0])) - cos(r_joints_array[3])*sin(r_joints_array[0])*sin(r_joints_array[1])) + cos(r_joints_array[5])*(cos(r_joints_array[4])*(cos(r_joints_array[3])*(cos(r_joints_array[0])*sin(r_joints_array[2]) + cos(r_joints_array[1])*cos(r_joints_array[2])*sin(r_joints_array[0])) + sin(r_joints_array[0])*sin(r_joints_array[1])*sin(r_joints_array[3])) - sin(r_joints_array[4])*(cos(r_joints_array[0])*cos(r_joints_array[2]) - cos(r_joints_array[1])*sin(r_joints_array[0])*sin(r_joints_array[2]))))\
               *(cos(r_joints_array[5])*(sin(r_joints_array[3])*(sin(r_joints_array[0])*sin(r_joints_array[2]) - cos(r_joints_array[0])*cos(r_joints_array[1])*cos(r_joints_array[2])) + cos(r_joints_array[0])*cos(r_joints_array[3])*sin(r_joints_array[1])) - sin(r_joints_array[5])*(cos(r_joints_array[4])*(cos(r_joints_array[3])*(sin(r_joints_array[0])*sin(r_joints_array[2]) - cos(r_joints_array[0])*cos(r_joints_array[1])*cos(r_joints_array[2])) - cos(r_joints_array[0])*sin(r_joints_array[1])*sin(r_joints_array[3])) - sin(r_joints_array[4])*(cos(r_joints_array[2])*sin(r_joints_array[0]) + cos(r_joints_array[0])*cos(r_joints_array[1])*sin(r_joints_array[2]))))\
               -cos(r_joints_array[6])*(cos(r_joints_array[6])*(sin(r_joints_array[5])*(sin(r_joints_array[3])*(sin(r_joints_array[0])*sin(r_joints_array[2]) - cos(r_joints_array[0])*cos(r_joints_array[1])*cos(r_joints_array[2])) + cos(r_joints_array[0])*cos(r_joints_array[3])*sin(r_joints_array[1])) + cos(r_joints_array[5])*(cos(r_joints_array[4])*(cos(r_joints_array[3])*(sin(r_joints_array[0])*sin(r_joints_array[2]) - cos(r_joints_array[0])*cos(r_joints_array[1])*cos(r_joints_array[2])) - cos(r_joints_array[0])*sin(r_joints_array[1])*sin(r_joints_array[3])) - sin(r_joints_array[4])*(cos(r_joints_array[2])*sin(r_joints_array[0]) + cos(r_joints_array[0])*cos(r_joints_array[1])*sin(r_joints_array[2])))) - sin(r_joints_array[6])*(sin(r_joints_array[4])*(cos(r_joints_array[3])*(sin(r_joints_array[0])*sin(r_joints_array[2]) - cos(r_joints_array[0])*cos(r_joints_array[1])*cos(r_joints_array[2])) - cos(r_joints_array[0])*sin(r_joints_array[1])*sin(r_joints_array[3])) + cos(r_joints_array[4])*(cos(r_joints_array[2])*sin(r_joints_array[0]) + cos(r_joints_array[0])*cos(r_joints_array[1])*sin(r_joints_array[2]))))\
@@ -277,7 +289,7 @@ class xArm7_kinematics():
     def tf_A02(self, r_joints_array):
         tf_A12 = np.matrix([[cos(r_joints_array[1]), -sin(r_joints_array[1]), 0, 0],\
                             [0, 0, 1, 0],\
-                            [-sin(r_joints_array[1]), 0, -cos(r_joints_array[1]), 0],\
+                            [-sin(r_joints_array[1]), -cos(r_joints_array[1]), 0, 0],\
                             [0, 0 ,0, 1]])
         tf = np.dot( self.tf_A01(r_joints_array), tf_A12 )
         return tf
@@ -285,7 +297,7 @@ class xArm7_kinematics():
     def tf_A03(self, r_joints_array):
         tf_A23 = np.matrix([[cos(r_joints_array[2]), -sin(r_joints_array[2]), 0, 0],\
                             [0, 0, -1, -self.l2],\
-                            [-sin(r_joints_array[2]), 0, cos(r_joints_array[2]), 0],\
+                            [sin(r_joints_array[2]), cos(r_joints_array[2]), 0, 0],\
                             [0, 0, 0, 1]])
         tf = np.dot( self.tf_A02(r_joints_array), tf_A23 )
         return tf
@@ -293,7 +305,7 @@ class xArm7_kinematics():
     def tf_A04(self, r_joints_array):
         tf_A34 = np.matrix([[cos(r_joints_array[3]), -sin(r_joints_array[3]), 0, self.l3],\
                             [0, 0, -1, 0],\
-                            [sin(r_joints_array[3]), 0, cos(r_joints_array[3]), 0],\
+                            [sin(r_joints_array[3]), cos(r_joints_array[3]), 0, 0],\
                             [0, 0, 0, 1]])
         tf = np.dot( self.tf_A03(r_joints_array), tf_A34 )
         return tf
@@ -301,7 +313,7 @@ class xArm7_kinematics():
     def tf_A05(self, r_joints_array):
         tf_A45 = np.matrix([[cos(r_joints_array[4]), -sin(r_joints_array[4]), 0, self.l4*sin(self.theta1)],\
                             [0, 0, -1, -self.l4*cos(self.theta1)],\
-                            [sin(r_joints_array[4]), 0, cos(r_joints_array[4]), 0],\
+                            [sin(r_joints_array[4]), cos(r_joints_array[4]), 0, 0],\
                             [0, 0, 0, 1]])
         tf = np.dot( self.tf_A04(r_joints_array), tf_A45 )
         return tf
@@ -309,15 +321,15 @@ class xArm7_kinematics():
     def tf_A06(self, r_joints_array):
         tf_A56 = np.matrix([[cos(r_joints_array[5]), -sin(r_joints_array[5]), 0, 0],\
                             [0, 0, -1, 0],\
-                            [sin(r_joints_array[5]), 0, cos(r_joints_array[5]), 0],\
+                            [sin(r_joints_array[5]), cos(r_joints_array[5]), 0, 0],\
                             [0, 0, 0, 1]])
         tf = np.dot( self.tf_A05(r_joints_array), tf_A56 )
         return tf
 
     def tf_A07(self, r_joints_array):
-        tf_A67 = np.matrix([[cos(r_joints_array[6]), -sin(r_joints_array[6]), 0, self.l5*sin(self.theta3)],\
+        tf_A67 = np.matrix([[cos(r_joints_array[6]), -sin(r_joints_array[6]), 0, self.l5*sin(self.theta2)],\
                             [0, 0, 1, self.l5*cos(self.theta2)],\
-                            [-sin(r_joints_array[6]), 0, -cos(r_joints_array[6]), 0],\
+                            [-sin(r_joints_array[6]), -cos(r_joints_array[6]), 0, 0],\
                             [0, 0, 0, 1]])
         tf = np.dot( self.tf_A06(r_joints_array), tf_A67 )
         return tf

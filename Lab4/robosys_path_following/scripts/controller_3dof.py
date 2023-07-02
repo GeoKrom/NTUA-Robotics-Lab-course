@@ -13,7 +13,7 @@ from math import sin, cos, atan2, pi, sqrt
 from numpy.linalg import inv, det, norm, pinv
 import numpy as np
 import time as t
-
+import trajectory as tg
 # Arm parameters
 # xArm7 kinematics class
 from kinematics import xArm7_kinematics
@@ -78,21 +78,27 @@ class xArm7_controller():
         self.joint6_pos_pub.publish(self.joint_angpos[5])
         tmp_rate.sleep()
         print("The system is ready to execute your algorithm...")
-
+        
+        Pi = np.matrix([0.6043, -0.2000, 0.1508, pi, 0, 0]).reshape(6,1)
+        Pf = np.matrix([0.6043, 0.200, 0.1508, pi, 0, 0]).reshape(6,1)
+        
+        rostime_now = rospy.get_rostime()
+        
         while not rospy.is_shutdown():
 
             # Compute each transformation matrix wrt the base frame from joints' angular positions
-            self.A01 = self.kinematics.tf_A01(self.joint_angpos)
-            self.A02 = self.kinematics.tf_A02(self.joint_angpos)
-            self.A03 = self.kinematics.tf_A03(self.joint_angpos)
-            self.A04 = self.kinematics.tf_A04(self.joint_angpos)
-            self.A05 = self.kinematics.tf_A05(self.joint_angpos)
-            self.A06 = self.kinematics.tf_A06(self.joint_angpos)
+            traj = tg.TrajectoryGen(Pi, Pf)
             self.A07 = self.kinematics.tf_A07(self.joint_angpos)
-
+            A07_real = self.kinematics.tf_A07(self.joint_states.position)
+            ee_pos = A07_real[0:3,3]
             
+            # print(self.p_real)
+            p_desired, _ = traj.polynomialTrajectory(rostime_now.secs)
+            p_desired = p_desired[0:3]
+            print(p_desired)
             # INSERT YOUR MAIN CODE HERE
-            joint_angles = self.kinematics.compute_angles(self.A07[1:3,4])
+            
+            joint_angles = self.kinematics.compute_angles(p_desired)
             self.joint_angpos[0] = joint_angles[0]
             self.joint_angpos[1] = joint_angles[1]
             self.joint_angpos[3] = joint_angles[3]
