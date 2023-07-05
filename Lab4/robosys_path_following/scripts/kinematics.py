@@ -39,18 +39,18 @@ class xArm7_kinematics():
         joint_7 = 0
 
         d1 = sqrt(pow(ee_position[0],2) + pow(ee_position[1],2))
-        L = 0.5*(pow(d1,2) + pow(ee_position[2] - self.l1, 2) - pow(self.l2, 2) - pow(self.l3, 2)- pow(self.l4, 2)- pow(self.l5, 2) - 2*self.l4*self.l5*cos(0.75 + self.theta1 - self.theta2))
-        k1 = -self.l2*self.l5*cos(self.theta2 - 0.75) + self.l3*self.l5*sin(self.theta2 - 0.75) - self.l2*self.l4*cos(self.theta1) + self.l3*self.l4*sin(self.theta1)
-        k2 =  self.l2*self.l5*sin(self.theta2 - 0.75) + self.l3*self.l5*cos(self.theta2 - 0.75) + self.l2*self.l4*sin(self.theta1) + self.l3*self.l4*cos(self.theta1)
+        L = 0.5*(pow(d1,2) + pow(ee_position[2] - self.l1, 2) - pow(self.l2, 2) - pow(self.l3, 2)- pow(self.l4, 2)- pow(self.l5, 2) - 2*self.l4*self.l5*cos(joint_6 + self.theta1 - self.theta2))
+        k1 = -self.l2*self.l5*cos(self.theta2 - joint_6) + self.l3*self.l5*sin(self.theta2 - joint_6) - self.l2*self.l4*cos(self.theta1) + self.l3*self.l4*sin(self.theta1)
+        k2 =  self.l2*self.l5*sin(self.theta2 - joint_6) + self.l3*self.l5*cos(self.theta2 - joint_6) + self.l2*self.l4*sin(self.theta1) + self.l3*self.l4*cos(self.theta1)
         r1 = sqrt(pow(k1,2) + pow(k2, 2))
-        
+
         joint_4 = atan2(L, sqrt(pow(r1, 2) - pow(L, 2))) - atan2(k1, k2)
+        lA = self.l4*sin(self.theta1)-self.l5*sin(joint_6-self.theta2)
+        lB = self.l4*cos(self.theta1)+self.l5*cos(joint_6-self.theta2)
+        k3 = self.l2 - lB*cos(joint_4) + lA*sin(joint_4)
+        k4 = self.l3 + lA*cos(joint_4) + lB*sin(joint_4)
         
-        k3 = self.l2 - self.l4*cos(joint_4 + self.theta1) - self.l5*cos(joint_6 - joint_4 - self.theta2)
-        k4 = self.l3 + self.l4*sin(joint_4 + self.theta1) - self.l5*sin(joint_6 - joint_4 - self.theta2)
-        r2 = sqrt(pow(k3,2) + pow(k4, 2))
-        
-        joint_2 = atan2(sqrt(pow(r2, 2) - pow((ee_position[2] - self.l1), 2)), ee_position[2] - self.l1) - atan2(k4, k3)
+        joint_2 = atan2(k3*d1-k4*(ee_position[2]-self.l1),k4*d1+k3*(ee_position[2]-self.l1))
 
         joint_angles = np.matrix([ joint_1, joint_2, joint_3, joint_4, joint_5, joint_6, joint_7 ])
 

@@ -78,25 +78,50 @@ class xArm7_controller():
         self.joint6_pos_pub.publish(self.joint_angpos[5])
         tmp_rate.sleep()
         print("The system is ready to execute your algorithm...")
-        
-        Pi = np.matrix([0.6043, -0.2000, 0.1508, pi, 0, 0]).reshape(6,1)
-        Pf = np.matrix([0.6043, 0.200, 0.1508, pi, 0, 0]).reshape(6,1)
-        
+
+        P1 = np.matrix([0.6043, -0.2000, 0.1508, pi, 0, 0]).reshape(6,1)
+        P2 = np.matrix([0.6043, 0.200, 0.1508, pi, 0, 0]).reshape(6,1)        
+        A07_real = self.kinematics.tf_A07(self.joint_states.position)
+        start_pos = A07_real[0:3,3]
+        Ps = np.concatenate([start_pos, np.zeros((3,1), dtype = np.float64)]) #SEE IF THIS GIVES OK OUTPUT
+        traj = tg.TrajectoryGen(P1, P2)
         rostime_now = rospy.get_rostime()
+        t0 = rostime_now.secs
         
         while not rospy.is_shutdown():
 
             # Compute each transformation matrix wrt the base frame from joints' angular positions
-            traj = tg.TrajectoryGen(Pi, Pf)
             self.A07 = self.kinematics.tf_A07(self.joint_angpos)
             A07_real = self.kinematics.tf_A07(self.joint_states.position)
             ee_pos = A07_real[0:3,3]
             
-            # print(self.p_real)
+            # Starting the Trajectory All Over Again
+            if (ee_pos == P1[0:2]):
+                Ps = P1
+                t0 = rostime_now.secs
+            elif (ee_pos == P2[0:2]):
+                Ps = P2
+                t0 = rostime_now.secs
+            
+            # Based on the Starting Position set the Final position
+            if (Ps == start_pos):
+                Pf = P1
+                T = 5.0
+            elif (Ps == P1):
+                Pf = P2
+                T = 10.0
+            elif (Ps == P2):
+                Pf = P1
+                T = 10.0
+            
+            # Setting Trajectory Parameters based on Starting and Final Position
+            traj.setStartEnd(Ps, Pf)
+            traj.setMovementPeriod(t0,t0 + T)
+            
+            # Trajectory Execution
             p_desired, _ = traj.polynomialTrajectory(rostime_now.secs)
             p_desired = p_desired[0:3]
-            print(p_desired)
-            # INSERT YOUR MAIN CODE HERE
+            # print(p_desired)
             
             joint_angles = self.kinematics.compute_angles(p_desired)
             self.joint_angpos[0] = joint_angles[0]

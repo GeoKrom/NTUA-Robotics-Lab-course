@@ -19,6 +19,7 @@ class TrajectoryGen():
         self.initialPosition = initialPosition
         self.endingPosition = endingPosition
         self.Delta = 1.0
+        self.t_0 = 0.0
         self.t_f = 10.0
         self.T = 20.0
         self.s_0 = 0.0
@@ -29,32 +30,36 @@ class TrajectoryGen():
         self.s_dot = np.zeros(1, dtype = np.float64)
         self.traj_position = np.zeros((6,1), dtype = np.float64)
         self.traj_velocity = np.zeros((6,1), dtype = np.float64)
-
+    
+    def setStartEnd(self, initialPosition, endingPosition):
+        self.initialPosition = initialPosition
+        self.endingPosition = endingPosition
+        
+    def setPhaseTime(self, Delta):
+        self.Delta = Delta
+        self.V = (self.s_f - self.s_0)/(self.t_f-self.t_0 - self.Delta)
+        self.a = self.V/self.Delta
+        
+    def setMovementPeriod(self, t_0, t_f):
+        self.t_0 = t_0
+        self.t_f = t_f
+        self.V = (self.s_f - self.s_0)/(self.t_f-self.t_0 - self.Delta)
+        self.a = self.V/self.Delta
+    
     def polynomialTrajectory(self, t):
 
-        if (t <= self.Delta):
-           self.s = (self.a/2)*pow(t,2)
-           self.s_dot = self.a*t
+        if (t <= self.Delta+self.t_0):
+           self.s = self.s_0 + (self.a/2)*pow(t-self.t_0,2)
+           self.s_dot = self.a*(t-self.t_0)
         
-        elif (t > self.Delta and t <= (self.t_f - self.Delta)):
-           self.s = 0.5 - (self.T/4)*self.V + self.V*t
+        elif (t > self.t0+self.Delta and t <= (self.t_f - self.Delta)):
+           self.s =(self.s_0+self.s_f - self.V*(self.t_f - self.t_0))/2 + self.V*(t-self.t_0)
            self.s_dot = self.V
         
-        elif (t > (self.t_f - self.Delta) and t <= self.t_f):
-            self.s = 1.0 - (self.a*pow(self.T,2))/8 + (self.a*self.t_f)*t - (self.a/2)*pow(t,2)
-            self.s_dot = self.a*self.t_f - self.a*t
+        elif (t > (self.t_f - self.Delta)):
+            self.s = self.s_f -self.a*pow(self.t_f-self.t_0,2)/2+self.a*(self.t_f-self.t_0)*(t-self.t_0)-(self.a/2)*pow(t-self.t_0.2);
+            self.s_dot = self.a*(self.t_f-self.t_0) - self.a*(t-self.t_0)
         
-        elif (t > self.t_f and t <= self.t_f + self.Delta):
-            self.s = 1.0 - self.a*pow(t - self.t_f, 2)
-            self.s_dot = - self.a*(t - self.t_f)
-        
-        elif ((t > self.t_f + self.Delta) and (t <= self.T - self.Delta)):
-            self.s = (1 + self.V*self.T)/2 - self.V*(t - self.t_f)
-            self.s_dot = - self.V
-        
-        elif ((t > self.T - self.Delta) and t <= self.T):
-            self.s = (self.a*pow(self.T, 2))/2 - self.a*self.T*(t - self.t_f) + (self.a/2)*pow(t - self.t_f, 2)
-            self.s_dot = self.a*(t - self.t_f)
         
         for i in range(0, 2):
             self.traj_position[i] = self.initialPosition[i] + self.s*(self.endingPosition[i] - self.initialPosition[i])

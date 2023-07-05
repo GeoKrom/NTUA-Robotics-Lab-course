@@ -82,42 +82,73 @@ class xArm7_controller():
         tmp_rate.sleep()
         print("The system is ready to execute your algorithm...")
 
-        Pi = np.matrix([0.6043, -0.2000, 0.1508, pi, 0, 0]).reshape(6,1)
-        Pf = np.matrix([0.6043, 0.200, 0.1508, pi, 0, 0]).reshape(6,1)
-    
+        P1 = np.matrix([0.6043, -0.2000, 0.1508, pi, 0, 0]).reshape(6,1)
+        P2 = np.matrix([0.6043, 0.200, 0.1508, pi, 0, 0]).reshape(6,1)        
+        A07_real = self.kinematics.tf_A07(self.joint_states.position)
+        start_pos = A07_real[0:3,3]
+        Ps = start_pos
+        traj = tg.TrajectoryGen(P1, P2)
+        
         # Gain matrix
-        K = np.matrix([[5, 0, 0, 0, 0, 0],
-                      [0, 4, 0, 0, 0, 0],
-                      [0, 0, 3, 0, 0, 0],
-                      [0, 0, 0, 3, 0, 0],
-                      [0, 0, 0, 0, 4, 0],
-                      [0, 0, 0, 0, 0, 3]])
+        K = np.matrix([[0.1, 0, 0, 0, 0, 0],
+                      [0, 0.1, 0, 0, 0, 0],
+                      [0, 0, 0.1, 0, 0, 0],
+                      [0, 0, 0, 0.1, 0, 0],
+                      [0, 0, 0, 0, 0.1, 0],
+                      [0, 0, 0, 0, 0, 0.1]])
     
         rostime_now = rospy.get_rostime()
         time_now = rostime_now.nsecs
+        t0 = time_now
         
         while not rospy.is_shutdown():
 
             # Compute each transformation matrix wrt the base frame from joints' angular positions
             self.A07 = self.kinematics.tf_A07(self.joint_angpos)
-
             A07_real = self.kinematics.tf_A07(self.joint_states.position)
             ee_pos = A07_real[0:3,3]
             ee_ori = (self.kinematics.rotationMatrixToEulerAngles(A07_real[0:3,0:3])).reshape(3,1)
+            
             # Compute jacobian matrix
             J = self.kinematics.compute_jacobian(self.joint_angpos)
             
             # pseudoinverse jacobian
             pinvJ = pinv(J)
             
-            traj = tg.TrajectoryGen(Pi, Pf)
+            # Starting the Trajectory All Over Again
+            if (ee_pos == P1[0:2]):
+                Ps = P1
+                t0 = rostime_now.secs
+            elif (ee_pos == P2[0:2]):
+                Ps = P2
+                t0 = rostime_now.secs
             
-            self.p_real = np.concatenate([ee_pos, ee_ori])
+            # Based on the Starting Position set the Final position
+            if (Ps == start_pos):
+                Pf = P1
+                T = 5.0
+            elif (Ps == P1):
+                Pf = P2
+                T = 10.0
+            elif (Ps == P2):
+                Pf = P1
+                T = 10.0
+            
+            # Setting Trajectory Parameters based on Starting and Final Position
+            traj.setStartEnd(Ps, Pf)
+            traj.setMovementPeriod(t0,t0 + T)
+            
+            
+            
             # print(self.p_real)
             p_desired, p_dot_desired = traj.polynomialTrajectory(rostime_now.secs)
             
-            # INSERT YOUR MAIN CODE HERE
-            q_dot = np.dot(pinvJ,(p_dot_desired + np.dot(K, p_desired - self.p_real)))
+            #Used To hold the orientation (I SAW SOMETHING IN MATLAB)++++SEE IF THIS GIVES OK OUTPUT
+            self.e_p = np.concatenate([p_desired[0:2]-ee_pos, np.zeros((3,1), dtype = np.float64)])
+            # ELSE USE:
+            # self.p_real = np.concatenate([ee_pos, ee_ori])
+            # e_p = p_desired - self.p_real
+            q_dot = np.dot(pinvJ,(p_dot_desired + np.dot(K, e_p)))
            
             self.joint_angvel = np.squeeze(np.asarray(q_dot))
             
