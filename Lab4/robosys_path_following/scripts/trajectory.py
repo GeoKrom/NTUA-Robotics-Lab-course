@@ -47,25 +47,26 @@ class TrajectoryGen():
         self.a = self.V/self.Delta
     
     def polynomialTrajectory(self, t):
-
-        if (t <= self.Delta+self.t_0):
-           self.s = self.s_0 + (self.a/2)*pow(t-self.t_0,2)
-           self.s_dot = self.a*(t-self.t_0)
         
-        elif (t > self.t0+self.Delta and t <= (self.t_f - self.Delta)):
-           self.s =(self.s_0+self.s_f - self.V*(self.t_f - self.t_0))/2 + self.V*(t-self.t_0)
+        if (t <= self.Delta + self.t_0):
+           self.s = self.s_0 + (self.a/2)*pow(t - self.t_0,2)
+           self.s_dot = self.a*(t - self.t_0)
+        
+        elif (t > self.t_0 + self.Delta and t <= (self.t_f - self.Delta)):
+           self.s = (self.s_0 + self.s_f - self.V*(self.t_f - self.t_0))/2 + self.V*(t - self.t_0)
            self.s_dot = self.V
         
-        elif (t > (self.t_f - self.Delta)):
-            self.s = self.s_f -self.a*pow(self.t_f-self.t_0,2)/2+self.a*(self.t_f-self.t_0)*(t-self.t_0)-(self.a/2)*pow(t-self.t_0.2);
-            self.s_dot = self.a*(self.t_f-self.t_0) - self.a*(t-self.t_0)
+        elif (t <= self.t_f and t > (self.t_f - self.Delta)):
+            self.s = self.s_f - self.a*pow(self.t_f - self.t_0,2)/2 + self.a*(self.t_f - self.t_0)*(t - self.t_0) - (self.a/2)*pow(t - self.t_0, 2)
+            self.s_dot = self.a*(self.t_f - self.t_0) - self.a*(t - self.t_0)
+            
+        elif (t > self.t_f):
+            print('PROBLEEEEM')
+            pass
         
+        for i in range(0, 6):
+            self.traj_position[i] = self.initialPosition[i,0] + self.s*(self.endingPosition[i] - self.initialPosition[i,0])
+            self.traj_velocity[i] = self.s_dot*(self.endingPosition[i,0] - self.initialPosition[i,0])
+
         
-        for i in range(0, 2):
-            self.traj_position[i] = self.initialPosition[i] + self.s*(self.endingPosition[i] - self.initialPosition[i])
-            self.traj_velocity[i] = self.s_dot*(self.endingPosition[i] - self.initialPosition[i])
-        for i in range(3,5):
-            self.traj_position[i] = self.initialPosition[i] + self.s*(self.endingPosition[i] - self.initialPosition[i])
-            self.traj_velocity[i] = self.s_dot*(self.endingPosition[i] - self.initialPosition[i])
-        
-        return self.traj_position, self.traj_velocity
+        return self.traj_position.ravel().tolist(), self.traj_velocity.ravel().tolist()
