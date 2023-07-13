@@ -113,12 +113,12 @@ class xArm7_controller():
         Ps = start_pos
         
         # Gain matrix
-        K = np.matrix([[5, 0, 0, 0, 0, 0],
-                       [0, 5, 0, 0, 0, 0],
-                       [0, 0, 5, 0, 0, 0],
-                       [0, 0, 0, 5, 0, 0],
-                       [0, 0, 0, 0, 5, 0],
-                       [0, 0, 0, 0, 0, 5]])
+        K = np.matrix([[2, 0, 0, 0, 0, 0],
+                       [0, 1, 0, 0, 0, 0],
+                       [0, 0, 2, 0, 0, 0],
+                       [0, 0, 0, 0, 0, 0],
+                       [0, 0, 0, 0, 0, 0],
+                       [0, 0, 0, 0, 0, 0]])
     
         traj = tg.TrajectoryGen(P1, P2)
         rostime_now = rospy.Time.now()
@@ -145,13 +145,13 @@ class xArm7_controller():
             pinvJ = pinv(J)
             
             # Starting the Trajectory All Over Again
-            if (abs(p_desired[1] - P1[1,0]) < 1e-6 and Pf[1,0] == P1[1,0]):
+            if (abs(p_desired[1] - P1[1,0]) < 1e-3 and Pf[1,0] == P1[1,0]):
                 print("End Effector is in point A!")
                 Ps = P1
                 Pf = P2
                 T = 10.0
                 t0 = time
-            elif (abs(p_desired[1] - P2[1,0]) < 1e-6 and Pf[1,0] == P2[1,0]):
+            elif (abs(p_desired[1] - P2[1,0]) < 1e-3 and Pf[1,0] == P2[1,0]):
                 print("End Effector is in point B!")
                 Ps = P2
                 Pf = P1
@@ -191,14 +191,18 @@ class xArm7_controller():
             #e_p = np.subtract(p_desired, self.p_real)
             print("Error: \n", self.e_p)
             desired_velocity = p_dot_desired + np.dot(K, self.e_p)
-            print("Desired Velocity in simulation: \n", desired_velocity)
-            self.joint_angvel = np.dot(pinvJ, desired_velocity)
-           
-            #self.ee_vel = np.dot(J, self.joint_angvel)
             
-            print("Angular Velocity: ")
-            print(self.joint_angvel)
-            print("Angular Velocity Shape: ", self.joint_angvel.shape)
+            print("Desired Velocity in simulation: \n", desired_velocity)
+            
+            self.joint_angvel = np.dot(pinvJ, desired_velocity)
+            
+            print("Angular Velocity: \n", self.joint_angvel)
+            print("Angular Velocity Shape: ", self.joint_angvel.shape)           
+            
+            
+            self.ee_vel = np.squeeze(np.asarray(np.dot(J, self.joint_angvel)))
+            print("End Effector Velocity: \n", self.ee_vel)
+
             # Convertion to angular position after integrating the angular speed in time
             # Calculate time interval
             time_prev = time_now
@@ -213,7 +217,7 @@ class xArm7_controller():
             print("Angular Position: ")
             print(self.joint_angpos)
             rostime_now = rospy.Time.now()
-            time = rostime_now.to_nsec()
+            time = rostime_now.to_sec()
             
             # Publish the new joint's angular positions
             self.joint1_pos_pub.publish(self.joint_angpos[0])
@@ -231,12 +235,12 @@ class xArm7_controller():
             self.end_effector_ori_y_pub.publish(self.p_real[4])
             self.end_effector_ori_z_pub.publish(self.p_real[5])
 
-            #self.end_effector_vel_x_pub.publish(self.ee_vel[0])
-            #self.end_effector_vel_y_pub.publish(self.ee_vel[1])
-            #self.end_effector_vel_z_pub.publish(self.ee_vel[2])
-            #self.end_effector_ori_vel_x_pub.publish(self.ee_vel[3])
-            #self.end_effector_ori_vel_y_pub.publish(self.ee_vel[4])
-            #self.end_effector_ori_vel_z_pub.publish(self.ee_vel[5])
+            self.end_effector_vel_x_pub.publish(self.ee_vel[0])
+            self.end_effector_vel_y_pub.publish(self.ee_vel[1])
+            self.end_effector_vel_z_pub.publish(self.ee_vel[2])
+            self.end_effector_ori_vel_x_pub.publish(self.ee_vel[3])
+            self.end_effector_ori_vel_y_pub.publish(self.ee_vel[4])
+            self.end_effector_ori_vel_z_pub.publish(self.ee_vel[5])
             
             self.pub_rate.sleep()
 
