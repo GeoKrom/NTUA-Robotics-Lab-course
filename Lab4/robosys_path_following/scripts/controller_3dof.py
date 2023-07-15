@@ -101,9 +101,6 @@ class xArm7_controller():
         
         while not rospy.is_shutdown():
             
-            i = rostime_now.to_sec()
-            print("Ros time iteration: ")
-            print(i)
             # Compute each transformation matrix wrt the base frame from joints' angular positions
             self.A07 = self.kinematics.tf_A07(self.joint_angpos)
             A07_real = self.kinematics.tf_A07(self.joint_states.position)
@@ -143,13 +140,13 @@ class xArm7_controller():
             print("time is: ", rostime_now.to_sec())
             p_desired, _ = traj.polynomialTrajectory(rostime_now.to_sec())
             p_desired = p_desired[0:3]
-            print(p_desired)
+            print("Desired position trajectory: \n", p_desired)
             
             joint_angles = self.kinematics.compute_angles(p_desired)
             self.joint_angpos[0] = joint_angles[0,0]
             self.joint_angpos[1] = joint_angles[0,1]
             self.joint_angpos[3] = joint_angles[0,3]
-            print(self.joint_angpos)
+            print("Angular Position: \n", self.joint_angpos)
             
             rostime_now = rospy.Time.now()
             time = rostime_now.to_sec()

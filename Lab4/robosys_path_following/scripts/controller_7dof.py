@@ -43,7 +43,7 @@ class xArm7_controller():
         self.A05 = self.kinematics.tf_A05(self.joint_angpos)
         self.A06 = self.kinematics.tf_A06(self.joint_angpos)
         self.A07 = self.kinematics.tf_A07(self.joint_angpos)
-        # End Effector Velocity
+        # End effector linear and angular velocity
         self.ee_vel = [0, 0, 0, 0, 0, 0]
         
         # ROS SETUP
@@ -58,6 +58,7 @@ class xArm7_controller():
         self.joint6_pos_pub = rospy.Publisher('/xarm/joint6_position_controller/command', Float64, queue_size=1)
         self.joint7_pos_pub = rospy.Publisher('/xarm/joint7_position_controller/command', Float64, queue_size=1)
 
+        # Topics for initialize end effector position and orientation
         self.end_effector_pos_x_pub = rospy.Publisher('/xarm/ee_position_x', Float64, queue_size=1)
         self.end_effector_pos_y_pub = rospy.Publisher('/xarm/ee_position_y', Float64, queue_size=1)
         self.end_effector_pos_z_pub = rospy.Publisher('/xarm/ee_position_z', Float64, queue_size=1)
@@ -65,13 +66,13 @@ class xArm7_controller():
         self.end_effector_ori_y_pub = rospy.Publisher('/xarm/ee_orientation_y', Float64, queue_size=1)
         self.end_effector_ori_z_pub = rospy.Publisher('/xarm/ee_orientation_z', Float64, queue_size=1)
        
-       
+       # Topics for initialize end effector linear and angular velocity
         self.end_effector_vel_x_pub = rospy.Publisher('/xarm/ee_velocity_x', Float64, queue_size=1)
         self.end_effector_vel_y_pub = rospy.Publisher('/xarm/ee_velocity_y', Float64, queue_size=1)
         self.end_effector_vel_z_pub = rospy.Publisher('/xarm/ee_velocity_z', Float64, queue_size=1)
-        self.end_effector_ori_vel_x_pub = rospy.Publisher('/xarm/ee_orientation_velocity_x', Float64, queue_size=1)
-        self.end_effector_ori_vel_y_pub = rospy.Publisher('/xarm/ee_orientation_velocity_y', Float64, queue_size=1)
-        self.end_effector_ori_vel_z_pub = rospy.Publisher('/xarm/ee_orientation_velocity_z', Float64, queue_size=1)
+        self.end_effector_ang_vel_x_pub = rospy.Publisher('/xarm/ee_angular_velocity_x', Float64, queue_size=1)
+        self.end_effector_ang_vel_y_pub = rospy.Publisher('/xarm/ee_angular_velocity_y', Float64, queue_size=1)
+        self.end_effector_ang_vel_z_pub = rospy.Publisher('/xarm/ee_angular_velocity_z', Float64, queue_size=1)
         
         #Publishing rate
         self.period = 1.0/rate
@@ -109,9 +110,9 @@ class xArm7_controller():
         start_pos1 = A07_real[0:3,3]
         start_pos2 = (self.kinematics.rotationMatrixToEulerAngles(A07_real[0:3,0:3])).reshape(3,1)
         start_pos = np.concatenate([start_pos1, start_pos2])
-        print(start_pos)
         Ps = start_pos
-        
+        print(start_pos)
+
         # Gain matrix
         K = np.matrix([[2, 0, 0, 0, 0, 0],
                        [0, 1, 0, 0, 0, 0],
@@ -129,9 +130,6 @@ class xArm7_controller():
         time_now = rostime_now.to_nsec()
         while not rospy.is_shutdown():
 
-            i = rostime_now.to_sec()
-            print("Ros time iteration: ")
-            print(i)
             # Compute each transformation matrix wrt the base frame from joints' angular positions
             self.A07 = self.kinematics.tf_A07(self.joint_angpos)
             A07_real = self.kinematics.tf_A07(self.joint_states.position)
@@ -178,26 +176,16 @@ class xArm7_controller():
             p_dot_desired = np.matrix([p_dot_desired]).reshape(6,1)
             self.p_real = np.concatenate([ee_pos, ee_ori])
             print("Real End Effector Position: \n", self.p_real)
-            # Used To hold the orientation (I SAW SOMETHING IN MATLAB)++++SEE IF THIS GIVES OK OUTPUT
+            
+            # Used To hold the orientation
             self.e_p = np.concatenate([p_desired[0:3] - ee_pos, np.zeros((3,1), dtype = np.float64)])
-            # ELSE USE:
-            
-            #print("EE real: \n", self.p_real)
-            #print("Shape of p desired: ", p_desired.shape)
-            #print("P desired: \n", p_desired)
-            #print("Shape of p_dot desired: ", p_dot_desired.shape)
-            #print("P_dot desired: \n", p_dot_desired)
-            #print("Shape of p real", self.p_real)
-            #e_p = np.subtract(p_desired, self.p_real)
             print("Error: \n", self.e_p)
-            desired_velocity = p_dot_desired + np.dot(K, self.e_p)
             
+            desired_velocity = p_dot_desired + np.dot(K, self.e_p)
             print("Desired Velocity in simulation: \n", desired_velocity)
             
             self.joint_angvel = np.dot(pinvJ, desired_velocity)
-            
-            print("Angular Velocity: \n", self.joint_angvel)
-            print("Angular Velocity Shape: ", self.joint_angvel.shape)           
+            print("Angular Velocity: \n", self.joint_angvel)          
             
             
             self.ee_vel = np.squeeze(np.asarray(np.dot(J, self.joint_angvel)))
@@ -210,8 +198,10 @@ class xArm7_controller():
             time_now = rostime_now.to_nsec()
             dt = (time_now - time_prev)/1e9
             print("Interval time: ", dt)
+            
             pos_update = np.multiply(self.joint_angvel, dt).reshape(1,7)
             print("Position update: \n", pos_update)
+            
             # Integration
             self.joint_angpos = np.squeeze(np.asarray(np.add(self.joint_angpos, pos_update)))
             print("Angular Position: ")
@@ -238,9 +228,9 @@ class xArm7_controller():
             self.end_effector_vel_x_pub.publish(self.ee_vel[0])
             self.end_effector_vel_y_pub.publish(self.ee_vel[1])
             self.end_effector_vel_z_pub.publish(self.ee_vel[2])
-            self.end_effector_ori_vel_x_pub.publish(self.ee_vel[3])
-            self.end_effector_ori_vel_y_pub.publish(self.ee_vel[4])
-            self.end_effector_ori_vel_z_pub.publish(self.ee_vel[5])
+            self.end_effector_ang_vel_x_pub.publish(self.ee_vel[3])
+            self.end_effector_ang_vel_y_pub.publish(self.ee_vel[4])
+            self.end_effector_ang_vel_z_pub.publish(self.ee_vel[5])
             
             self.pub_rate.sleep()
 
