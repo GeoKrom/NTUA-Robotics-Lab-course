@@ -67,9 +67,9 @@ class xArm7_controller():
         self.end_effector_ori_z_pub = rospy.Publisher('/xarm/ee_orientation_z', Float64, queue_size=1)
        
        # Topics for initialize end effector linear and angular velocity
-        self.end_effector_vel_x_pub = rospy.Publisher('/xarm/ee_velocity_x', Float64, queue_size=1)
-        self.end_effector_vel_y_pub = rospy.Publisher('/xarm/ee_velocity_y', Float64, queue_size=1)
-        self.end_effector_vel_z_pub = rospy.Publisher('/xarm/ee_velocity_z', Float64, queue_size=1)
+        self.end_effector_lin_vel_x_pub = rospy.Publisher('/xarm/ee_linear_velocity_x', Float64, queue_size=1)
+        self.end_effector_lin_vel_y_pub = rospy.Publisher('/xarm/ee_linear_velocity_y', Float64, queue_size=1)
+        self.end_effector_lin_vel_z_pub = rospy.Publisher('/xarm/ee_linear_velocity_z', Float64, queue_size=1)
         self.end_effector_ang_vel_x_pub = rospy.Publisher('/xarm/ee_angular_velocity_x', Float64, queue_size=1)
         self.end_effector_ang_vel_y_pub = rospy.Publisher('/xarm/ee_angular_velocity_y', Float64, queue_size=1)
         self.end_effector_ang_vel_z_pub = rospy.Publisher('/xarm/ee_angular_velocity_z', Float64, queue_size=1)
@@ -225,9 +225,9 @@ class xArm7_controller():
             self.end_effector_ori_y_pub.publish(self.p_real[4])
             self.end_effector_ori_z_pub.publish(self.p_real[5])
 
-            self.end_effector_vel_x_pub.publish(self.ee_vel[0])
-            self.end_effector_vel_y_pub.publish(self.ee_vel[1])
-            self.end_effector_vel_z_pub.publish(self.ee_vel[2])
+            self.end_effector_lin_vel_x_pub.publish(self.ee_vel[0])
+            self.end_effector_lin_vel_y_pub.publish(self.ee_vel[1])
+            self.end_effector_lin_vel_z_pub.publish(self.ee_vel[2])
             self.end_effector_ang_vel_x_pub.publish(self.ee_vel[3])
             self.end_effector_ang_vel_y_pub.publish(self.ee_vel[4])
             self.end_effector_ang_vel_z_pub.publish(self.ee_vel[5])
