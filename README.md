@@ -19,3 +19,12 @@ The third and final controller which was used was a nonlinear algorithm which co
 
 ## Lab 4 - Semester Project
 
+## Authors
+
+Eirini Maria Georganta
+
+[George Kassavetakis](https://github.com/Gkassavetakis)
+
+[George Krommydas](https://github.com/GeoKrom)
+
+Frantzieska Michail
